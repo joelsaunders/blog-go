@@ -1,0 +1,8 @@
+PORT=8000
+
+[Postgres]
+    URL = "localhost"
+    DBNAME = "bilbo"
+    DBPORT = "15432"
+    DBUSER = "root"
+    DBPASSWORD = "root"
