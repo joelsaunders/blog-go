@@ -3,31 +3,35 @@ package api
 import (
 	"net/http"
 
+	"github.com/joelsaunders/bilbo-go/repository"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
-	"github.com/joelsaunders/bilbo-go/config"
 )
 
-func UserRoutes(configuration *config.Config) *chi.Mux {
+func UserRoutes(userStore repository.UserStore) *chi.Mux {
 	router := chi.NewRouter()
 	// router.Get("/{todoID}", GetATodo(configuration))
 	// router.Delete("/{todoID}", DeleteTodo(configuration))
 	// router.Post("/", CreateTodo(configuration))
-	router.Get("/", GetAllUsers(configuration))
+	router.Get("/", NewUserHandler(userStore).getUserList())
 	return router
 }
 
-type User struct {
-	Username string
+type UserHandler struct {
+	store repository.UserStore
 }
 
-func GetAllUsers(configuration *config.Config) http.HandlerFunc {
+func NewUserHandler(userStore repository.UserStore) *UserHandler {
+	return &UserHandler{userStore}
+}
+
+func (uh UserHandler) getUserList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		users := []User{
-			{
-				Username: "Joel",
-			},
+		users, err := uh.store.List(r.Context(), 10)
+		if err != nil {
+			http.Error(w, http.StatusText(500), 500)
 		}
-		render.JSON(w, r, users) // A chi router helper for serializing and returning json
+		render.JSON(w, r, users)
 	}
 }

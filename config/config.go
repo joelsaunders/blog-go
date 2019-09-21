@@ -1,12 +1,12 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	viper "github.com/spf13/viper"
 )
@@ -24,7 +24,7 @@ type Constants struct {
 
 type Config struct {
 	Constants
-	Database *sql.DB
+	Database *sqlx.DB
 }
 
 func initViper() (Constants, error) {
@@ -51,36 +51,46 @@ func NewConfig() (*Config, error) {
 		return &config, err
 	}
 
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		config.Postgres.URL, config.Postgres.DBPORT,
-		config.Postgres.DBUSER, config.Postgres.DBUSER, config.Postgres.DBNAME)
-
-	db, err := sql.Open("postgres", psqlInfo)
+	db, err := NewDatabase(config.Postgres.URL, config.Postgres.DBPORT,
+		config.Postgres.DBUSER, config.Postgres.DBPASSWORD, config.Postgres.DBNAME)
 
 	if err != nil {
 		return &config, err
 	}
-
-	err = db.Ping()
-
-	if err != nil {
-		return &config, err
-	}
-
-	log.Println("successfully connected to db")
 
 	config.Database = db
 	return &config, nil
 }
 
-func MigrateDatabase(db *sql.DB) error {
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
+func NewDatabase(url, port, user, password, name string) (*sqlx.DB, error) {
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		url, port, user, password, name,
+	)
+
+	db, err := sqlx.Open("postgres", psqlInfo)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("successfully connected to db")
+	return db, nil
+}
+
+func MigrateDatabase(db *sqlx.DB, migrationsPath string) error {
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	if err != nil {
 		return err
 	}
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://./migrations",
+		fmt.Sprintf("file://%s", migrationsPath),
 		"postgres",
 		driver,
 	)
