@@ -10,6 +10,7 @@ import (
 
 type UserStore interface {
 	List(ctx context.Context, num int) ([]*models.User, error)
+	Create(ctx context.Context, user *models.NewUser) (*models.User, error)
 }
 
 type DB struct {

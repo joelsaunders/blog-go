@@ -11,7 +11,6 @@ import (
 
 type DB interface {
 	Users() repository.UserStore
-	// Test() repository.UserStore
 }
 
 type Server struct {

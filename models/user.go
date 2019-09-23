@@ -5,3 +5,8 @@ type User struct {
 	Email    string `db:"email"`
 	Password string `db:"password"`
 }
+
+type NewUser struct {
+	Email    string `db:"email"`
+	Password string `db:"password"`
+}

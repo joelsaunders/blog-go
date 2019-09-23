@@ -33,3 +33,30 @@ func (us *PGUserStore) List(ctx context.Context, num int) ([]*models.User, error
 
 	return users, nil
 }
+
+func (us *PGUserStore) Get(ctx context.Context, id int) (*models.User, error) {
+	user := models.User{}
+	err := us.DB.Get(&user, "SELECT * FROM users WHERE id=$1", id)
+
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (us *PGUserStore) Create(ctx context.Context, user *models.NewUser) (*models.User, error) {
+	// TODO: make the create return all the relevant rows
+	query := "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id"
+	var lastInsertId int
+	err := us.DB.QueryRowx(query, user.Email, user.Password).Scan(&lastInsertId)
+	if err != nil {
+		return nil, err
+	}
+
+	createdUser, err := us.Get(ctx, lastInsertId)
+	if err != nil {
+		return nil, err
+	}
+
+	return createdUser, nil
+}
