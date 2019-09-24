@@ -1,13 +1,18 @@
 package api_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
+
+	"github.com/joelsaunders/bilbo-go/auth"
 
 	"github.com/DATA-DOG/go-txdb"
 	"github.com/jmoiron/sqlx"
@@ -36,12 +41,63 @@ func (fu fakeUserDB) List(ctx context.Context, num int) ([]*models.User, error) 
 	return fu.users, nil
 }
 
-func (fu fakeUserDB) Create(ctx context.Context, user *models.NewUser) (*models.User, error) {
-	return &models.User{
-		ID:       rand.Intn(100),
+func (fu *fakeUserDB) Create(ctx context.Context, user *models.NewUser) (*models.User, error) {
+	userObj := &models.User{
+		ID:       len(fu.users),
 		Email:    user.Email,
 		Password: user.Password,
-	}, nil
+	}
+	fu.users = append(fu.users, userObj)
+	return userObj, nil
+}
+
+func (fu fakeUserDB) GetByID(ctx context.Context, id int) (*models.User, error) {
+	for _, user := range fu.users {
+		if user.ID == id {
+			return user, nil
+		}
+	}
+	return nil, errors.New("no user found")
+}
+
+func (fu fakeUserDB) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+	for _, user := range fu.users {
+		if user.Email == email {
+			return user, nil
+		}
+	}
+	return nil, errors.New("no user found")
+}
+
+func assertResponseCode(got int, want int, t *testing.T) {
+	if got != want {
+		t.Fatalf("got response code %d want %d", got, want)
+	}
+}
+
+func assertBody(got, want string, t *testing.T) {
+	if got != want {
+		t.Fatalf("expected body '%v' got '%v'", want, got)
+	}
+}
+
+func assertEqualJSON(s1, s2 string, t *testing.T) {
+	var o1 interface{}
+	var o2 interface{}
+
+	var err error
+	err = json.Unmarshal([]byte(s1), &o1)
+	if err != nil {
+		t.Fatalf("Error mashalling string 1 :: %s", err.Error())
+	}
+	err = json.Unmarshal([]byte(s2), &o2)
+	if err != nil {
+		t.Fatalf("Error mashalling string 2 :: %s", err.Error())
+	}
+
+	if !reflect.DeepEqual(o1, o2) {
+		t.Fatalf("json %s and %s are not equal", s1, s2)
+	}
 }
 
 func TestUsersAPIIntegration(t *testing.T) {
@@ -67,12 +123,7 @@ func TestUsersAPIIntegration(t *testing.T) {
 
 		server.Router.ServeHTTP(response, request)
 
-		got := response.Body.String()
-		want := "[]\n"
-
-		if got != want {
-			t.Fatalf("expected '%v' got '%v'", want, got)
-		}
+		assertBody(response.Body.String(), "[]\n", t)
 	})
 }
 
@@ -86,14 +137,7 @@ func TestUsersAPI(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-
-		got := response.Body.String()
-		want := "[]\n"
-
-		if got != want {
-			t.Fatalf("expected '%s' got '%s'", want, got)
-		}
-
+		assertBody(response.Body.String(), "[]\n", t)
 	})
 
 	t.Run("Test users list results", func(t *testing.T) {
@@ -113,11 +157,95 @@ func TestUsersAPI(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		got := response.Body.String()
-		want := "[{\"ID\":1,\"Email\":\"joel.st.saunders@gmail.com\",\"Password\":\"helloooooo\"}]\n"
+		want := "[{\"id\":1,\"email\":\"joel.st.saunders@gmail.com\"}]\n"
+		assertBody(got, want, t)
+	})
 
-		if got != want {
-			t.Fatalf("expected '%s' got '%s'", want, got)
+	t.Run("Test user retrieve", func(t *testing.T) {
+		testUser := models.User{
+			ID:       1,
+			Email:    "joel.st.saunders@gmail.com",
+			Password: auth.HashPassword("helloooooo"),
 		}
 
+		fakeDB := fakeDB{}
+		fakeDB.users = []*models.User{&testUser}
+		server := api.UserRoutes(fakeDB.Users())
+		request, _ := http.NewRequest(http.MethodGet, "/1", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		expectedUser, _ := json.Marshal(testUser)
+		assertEqualJSON(response.Body.String(), string(expectedUser), t)
+	})
+
+	t.Run("Test create user", func(t *testing.T) {
+		fakeDB := fakeDB{}
+		server := api.UserRoutes(fakeDB.Users())
+
+		newUser := models.NewUser{Email: "newperson@new.com", Password: "Password"}
+		newUserJSON, _ := json.Marshal(newUser)
+
+		request, _ := http.NewRequest(http.MethodPost, "/", bytes.NewReader(newUserJSON))
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertResponseCode(response.Code, http.StatusCreated, t)
+
+		got := response.Body.String()
+		want := fmt.Sprintf("{\"id\":0,\"email\":\"%s\"}\n", newUser.Email)
+		assertBody(got, want, t)
+	})
+
+	t.Run("login incorrect credentials", func(t *testing.T) {
+		fakeDB := fakeDB{}
+		fakeDB.users = []*models.User{
+			&models.User{
+				ID:       1,
+				Email:    "joel.st.saunders@gmail.com",
+				Password: auth.HashPassword("helloooooo"),
+			},
+		}
+		server := api.UserRoutes(fakeDB.Users())
+
+		credentials := map[string]string{"email": "joel.st.saunders@gmail.com", "password": "Password"}
+		credentialsJSON, _ := json.Marshal(credentials)
+
+		request, _ := http.NewRequest(http.MethodPost, "/login", bytes.NewReader(credentialsJSON))
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		assertResponseCode(response.Code, http.StatusUnauthorized, t)
+	})
+
+	t.Run("login correct credentials", func(t *testing.T) {
+		testUser := models.User{
+			ID:       1,
+			Email:    "joel.st.saunders@gmail.com",
+			Password: auth.HashPassword("helloooooo"),
+		}
+
+		fakeDB := fakeDB{}
+		fakeDB.users = []*models.User{
+			&testUser,
+		}
+		server := api.UserRoutes(fakeDB.Users())
+
+		credentials := map[string]string{"email": "joel.st.saunders@gmail.com", "password": "helloooooo"}
+		credentialsJSON, _ := json.Marshal(credentials)
+
+		request, _ := http.NewRequest(http.MethodPost, "/login", bytes.NewReader(credentialsJSON))
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		expectedToken, _ := auth.GenerateToken(testUser.Email)
+
+		assertResponseCode(response.Code, http.StatusOK, t)
+		assertBody(response.Body.String(), fmt.Sprintf("{\"token\":\"%s\"}\n", expectedToken), t)
 	})
 }

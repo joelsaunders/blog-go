@@ -74,7 +74,7 @@ func TestUsers(t *testing.T) {
 			t.Fatalf("could not create user: %s", err)
 		}
 
-		if user.Email != newUser.Email || user.Password != newUser.Password {
+		if user.Email != newUser.Email {
 			t.Fatalf("user %v does not same data as inserted user: %v", user, newUser)
 		}
 	})

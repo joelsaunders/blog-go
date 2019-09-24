@@ -2,6 +2,10 @@ package api
 
 import (
 	"net/http"
+	"strconv"
+
+	"github.com/joelsaunders/bilbo-go/auth"
+	"github.com/joelsaunders/bilbo-go/models"
 
 	"github.com/joelsaunders/bilbo-go/repository"
 
@@ -11,10 +15,14 @@ import (
 
 func UserRoutes(userStore repository.UserStore) *chi.Mux {
 	router := chi.NewRouter()
-	// router.Get("/{todoID}", GetATodo(configuration))
-	// router.Delete("/{todoID}", DeleteTodo(configuration))
-	// router.Post("/", CreateTodo(configuration))
+
+	router.Group(func(router chi.Router) {
+		router.Get("/{userID}", NewUserHandler(userStore).retrieveUser())
+	})
+
 	router.Get("/", NewUserHandler(userStore).getUserList())
+	router.Post("/", NewUserHandler(userStore).createUser())
+	router.Post("/login", NewUserHandler(userStore).loginUser())
 	return router
 }
 
@@ -26,6 +34,50 @@ func NewUserHandler(userStore repository.UserStore) *UserHandler {
 	return &UserHandler{userStore}
 }
 
+func (uh UserHandler) loginUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		credentials := userCredentialsPayload{}
+
+		if err := render.Bind(r, &credentials); err != nil {
+			render.Render(w, r, ErrInvalidRequest(err))
+			return
+		}
+
+		err := auth.CheckCredentials(r.Context(), credentials.Email, credentials.Password, uh.store)
+
+		if err != nil {
+			render.Render(w, r, ErrAuthenication(err))
+			return
+		}
+
+		token, err := auth.GenerateToken(credentials.Email)
+		if err != nil {
+			render.Render(w, r, ErrTokenCreation(err))
+			return
+		}
+
+		tokenResponse := userTokenResponse{token}
+
+		render.Status(r, http.StatusOK)
+		render.JSON(w, r, tokenResponse)
+	}
+}
+
+func (uh UserHandler) retrieveUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
+		if err != nil {
+			http.Error(w, http.StatusText(404), 404)
+		}
+
+		user, err := uh.store.GetByID(r.Context(), userID)
+		if err != nil {
+			http.Error(w, http.StatusText(500), 500)
+		}
+		render.JSON(w, r, user)
+	}
+}
+
 func (uh UserHandler) getUserList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := uh.store.List(r.Context(), 10)
@@ -34,4 +86,46 @@ func (uh UserHandler) getUserList() http.HandlerFunc {
 		}
 		render.JSON(w, r, users)
 	}
+}
+
+func (uh UserHandler) createUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		newUser := newUserPayload{}
+		if err := render.Bind(r, &newUser); err != nil {
+			render.Render(w, r, ErrInvalidRequest(err))
+			return
+		}
+
+		user, err := uh.store.Create(r.Context(), newUser.NewUser)
+
+		if err != nil {
+			render.Render(w, r, ErrDatabase(err))
+			return
+		}
+
+		render.Status(r, http.StatusCreated)
+		render.JSON(w, r, user)
+	}
+}
+
+type userTokenResponse struct {
+	Token string `json:"token"`
+}
+
+type userCredentialsPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (ucp *userCredentialsPayload) Bind(r *http.Request) error {
+	return nil
+}
+
+type newUserPayload struct {
+	*models.NewUser
+}
+
+func (nu *newUserPayload) Bind(r *http.Request) error {
+	nu.Password = auth.HashPassword(nu.Password)
+	return nil
 }
