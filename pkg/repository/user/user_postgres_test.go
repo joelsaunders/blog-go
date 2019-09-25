@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/bilbo-go/models"
-	"github.com/joelsaunders/bilbo-go/repository/user"
+	"github.com/joelsaunders/bilbo-go/pkg/models"
+	"github.com/joelsaunders/bilbo-go/pkg/repository/user"
 	"github.com/joelsaunders/bilbo-go/test_utils"
 
 	"github.com/DATA-DOG/go-txdb"
@@ -30,7 +30,7 @@ func TestUsers(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	test_utils.SetUpTestDB("../../migrations")
+	test_utils.SetUpTestDB("../../../migrations")
 	txdb.Register("txdb", "postgres", "host=localhost port=15432 user=root password=root dbname=test sslmode=disable")
 
 	t.Run("Test Get Users", func(t *testing.T) {

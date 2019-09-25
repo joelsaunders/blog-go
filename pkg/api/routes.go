@@ -7,8 +7,8 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/bilbo-go/config"
-	"github.com/joelsaunders/bilbo-go/repository/user"
+	"github.com/joelsaunders/bilbo-go/pkg/config"
+	"github.com/joelsaunders/bilbo-go/pkg/repository/user"
 )
 
 func Routes(config *config.Config, db *sqlx.DB) *chi.Mux {
@@ -21,7 +21,7 @@ func Routes(config *config.Config, db *sqlx.DB) *chi.Mux {
 	router.Use(middleware.Timeout(60 * time.Second))
 
 	router.Route("/api/v1", func(r chi.Router) {
-		r.Mount("/user", UserRoutes(&user.PGUserStore{db}, config))
+		r.Mount("/user", UserRoutes(&user.PGUserStore{DB: db}, config))
 	})
 
 	return router

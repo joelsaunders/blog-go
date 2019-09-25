@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/joelsaunders/bilbo-go/api"
-	config "github.com/joelsaunders/bilbo-go/config"
-	"github.com/joelsaunders/bilbo-go/repository/postgres"
+	"github.com/joelsaunders/bilbo-go/pkg/api"
+	config "github.com/joelsaunders/bilbo-go/pkg/config"
+	"github.com/joelsaunders/bilbo-go/pkg/repository/postgres"
 
 	"github.com/go-chi/chi"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

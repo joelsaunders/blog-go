@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/joelsaunders/bilbo-go/repository/postgres"
+	"github.com/joelsaunders/bilbo-go/pkg/repository/postgres"
 )
 
 func SetUpTestDB(migrationPath string) error {

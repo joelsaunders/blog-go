@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/bilbo-go/models"
+	"github.com/joelsaunders/bilbo-go/pkg/models"
 )
 
 type PGUserStore struct {

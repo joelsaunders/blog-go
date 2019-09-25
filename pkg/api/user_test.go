@@ -14,14 +14,14 @@ import (
 
 	"github.com/DATA-DOG/go-txdb"
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/bilbo-go/auth"
-	"github.com/joelsaunders/bilbo-go/config"
+	"github.com/joelsaunders/bilbo-go/pkg/auth"
+	"github.com/joelsaunders/bilbo-go/pkg/config"
 	"github.com/joelsaunders/bilbo-go/test_utils"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/joelsaunders/bilbo-go/api"
-	"github.com/joelsaunders/bilbo-go/models"
-	"github.com/joelsaunders/bilbo-go/repository"
+	"github.com/joelsaunders/bilbo-go/pkg/api"
+	"github.com/joelsaunders/bilbo-go/pkg/models"
+	"github.com/joelsaunders/bilbo-go/pkg/repository"
 	_ "github.com/lib/pq"
 )
 
@@ -105,7 +105,7 @@ func TestUsersAPIIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	test_utils.SetUpTestDB("../migrations")
+	test_utils.SetUpTestDB("../../migrations")
 	txdb.Register("txdb", "postgres", "host=localhost port=15432 user=root password=root dbname=test sslmode=disable")
 
 	t.Run("Test Empty Response", func(t *testing.T) {

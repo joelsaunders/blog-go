@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/joelsaunders/bilbo-go/models"
+	"github.com/joelsaunders/bilbo-go/pkg/models"
 )
 
 type UserStore interface {
