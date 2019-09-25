@@ -12,16 +12,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/joelsaunders/bilbo-go/auth"
-
 	"github.com/DATA-DOG/go-txdb"
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/bilbo-go/repository"
+	"github.com/joelsaunders/bilbo-go/auth"
+	"github.com/joelsaunders/bilbo-go/config"
 	"github.com/joelsaunders/bilbo-go/test_utils"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joelsaunders/bilbo-go/api"
 	"github.com/joelsaunders/bilbo-go/models"
+	"github.com/joelsaunders/bilbo-go/repository"
 	_ "github.com/lib/pq"
 )
 
@@ -109,19 +109,20 @@ func TestUsersAPIIntegration(t *testing.T) {
 	txdb.Register("txdb", "postgres", "host=localhost port=15432 user=root password=root dbname=test sslmode=disable")
 
 	t.Run("Test Empty Response", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
+
 		cName := fmt.Sprintf("connection_%d", time.Now().UnixNano())
 		db, err := sqlx.Open("txdb", cName)
 		if err != nil {
 			t.Fatal("could not open db")
 		}
 		defer db.Close()
-		repo := repository.NewDB(db)
 
 		request, _ := http.NewRequest(http.MethodGet, "/api/v1/user", nil)
 		response := httptest.NewRecorder()
-		server := api.NewServer(repo)
+		server := api.Routes(configuration, db)
 
-		server.Router.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		assertBody(response.Body.String(), "[]\n", t)
 	})
@@ -129,9 +130,10 @@ func TestUsersAPIIntegration(t *testing.T) {
 
 func TestUsersAPI(t *testing.T) {
 	t.Run("Test users list empty", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
 		fakeDB := fakeDB{}
 		fakeDB.users = make([]*models.User, 0)
-		server := api.UserRoutes(fakeDB.Users())
+		server := api.UserRoutes(fakeDB.Users(), configuration)
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
@@ -141,6 +143,7 @@ func TestUsersAPI(t *testing.T) {
 	})
 
 	t.Run("Test users list results", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
 		fakeDB := fakeDB{}
 		fakeDB.users = []*models.User{
 			&models.User{
@@ -149,7 +152,7 @@ func TestUsersAPI(t *testing.T) {
 				Password: "helloooooo",
 			},
 		}
-		server := api.UserRoutes(fakeDB.Users())
+		server := api.UserRoutes(fakeDB.Users(), configuration)
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
@@ -162,6 +165,8 @@ func TestUsersAPI(t *testing.T) {
 	})
 
 	t.Run("Test user retrieve", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
+
 		testUser := models.User{
 			ID:       1,
 			Email:    "joel.st.saunders@gmail.com",
@@ -170,19 +175,28 @@ func TestUsersAPI(t *testing.T) {
 
 		fakeDB := fakeDB{}
 		fakeDB.users = []*models.User{&testUser}
-		server := api.UserRoutes(fakeDB.Users())
+		server := api.UserRoutes(fakeDB.Users(), configuration)
+
 		request, _ := http.NewRequest(http.MethodGet, "/1", nil)
+		authToken, _ := auth.GenerateToken(testUser.Email)
+		// set the correct token header
+		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
+
+		assertResponseCode(response.Code, http.StatusOK, t)
 
 		expectedUser, _ := json.Marshal(testUser)
 		assertEqualJSON(response.Body.String(), string(expectedUser), t)
 	})
 
 	t.Run("Test create user", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
+
 		fakeDB := fakeDB{}
-		server := api.UserRoutes(fakeDB.Users())
+		server := api.UserRoutes(fakeDB.Users(), configuration)
 
 		newUser := models.NewUser{Email: "newperson@new.com", Password: "Password"}
 		newUserJSON, _ := json.Marshal(newUser)
@@ -201,6 +215,8 @@ func TestUsersAPI(t *testing.T) {
 	})
 
 	t.Run("login incorrect credentials", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
+
 		fakeDB := fakeDB{}
 		fakeDB.users = []*models.User{
 			&models.User{
@@ -209,7 +225,7 @@ func TestUsersAPI(t *testing.T) {
 				Password: auth.HashPassword("helloooooo"),
 			},
 		}
-		server := api.UserRoutes(fakeDB.Users())
+		server := api.UserRoutes(fakeDB.Users(), configuration)
 
 		credentials := map[string]string{"email": "joel.st.saunders@gmail.com", "password": "Password"}
 		credentialsJSON, _ := json.Marshal(credentials)
@@ -223,6 +239,8 @@ func TestUsersAPI(t *testing.T) {
 	})
 
 	t.Run("login correct credentials", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
+
 		testUser := models.User{
 			ID:       1,
 			Email:    "joel.st.saunders@gmail.com",
@@ -233,7 +251,7 @@ func TestUsersAPI(t *testing.T) {
 		fakeDB.users = []*models.User{
 			&testUser,
 		}
-		server := api.UserRoutes(fakeDB.Users())
+		server := api.UserRoutes(fakeDB.Users(), configuration)
 
 		credentials := map[string]string{"email": "joel.st.saunders@gmail.com", "password": "helloooooo"}
 		credentialsJSON, _ := json.Marshal(credentials)

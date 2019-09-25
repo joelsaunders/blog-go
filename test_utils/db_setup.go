@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/joelsaunders/bilbo-go/config"
+	"github.com/joelsaunders/bilbo-go/repository/postgres"
 )
 
 func SetUpTestDB(migrationPath string) error {
@@ -33,14 +33,14 @@ func SetUpTestDB(migrationPath string) error {
 		return err
 	}
 
-	testdb, err := config.NewDatabase("localhost", "15432", "root", "root", "test")
+	testdb, err := postgres.NewDatabase("localhost", "15432", "root", "root", "test")
 
 	if err != nil {
 		log.Print("could not connect to new test db")
 		return err
 	}
 
-	err = config.MigrateDatabase(testdb, migrationPath)
+	err = postgres.MigrateDatabase(testdb, migrationPath)
 
 	if err != nil {
 		log.Printf("could not migrate test db %s", err)

@@ -5,18 +5,22 @@ import (
 	"strconv"
 
 	"github.com/joelsaunders/bilbo-go/auth"
+	"github.com/joelsaunders/bilbo-go/config"
 	"github.com/joelsaunders/bilbo-go/models"
-
 	"github.com/joelsaunders/bilbo-go/repository"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/jwtauth"
 	"github.com/go-chi/render"
 )
 
-func UserRoutes(userStore repository.UserStore) *chi.Mux {
+func UserRoutes(userStore repository.UserStore, config *config.Config) *chi.Mux {
 	router := chi.NewRouter()
+	tokenAuth := jwtauth.New("HS256", []byte("my_secret_key"), nil)
 
 	router.Group(func(router chi.Router) {
+		router.Use(jwtauth.Verifier(tokenAuth))
+		router.Use(jwtauth.Authenticator)
 		router.Get("/{userID}", NewUserHandler(userStore).retrieveUser())
 	})
 
