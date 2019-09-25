@@ -119,6 +119,7 @@ func TestUsersAPIIntegration(t *testing.T) {
 		defer db.Close()
 
 		request, _ := http.NewRequest(http.MethodGet, "/api/v1/user", nil)
+		addAuthHeader(request, "fakeemailthatdoesnotexist@gmail.com", configuration.JWTSecret)
 		response := httptest.NewRecorder()
 		server := api.Routes(configuration, db)
 
@@ -128,35 +129,28 @@ func TestUsersAPIIntegration(t *testing.T) {
 	})
 }
 
+func addAuthHeader(request *http.Request, email string, secret []byte) {
+	// set the correct token header
+	authToken, _ := auth.GenerateToken(email, secret)
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+}
+
 func TestUsersAPI(t *testing.T) {
-	t.Run("Test users list empty", func(t *testing.T) {
-		configuration, _ := config.NewConfig()
-		fakeDB := fakeDB{}
-		fakeDB.users = make([]*models.User, 0)
-		server := api.UserRoutes(fakeDB.Users(), configuration)
-
-		request, _ := http.NewRequest(http.MethodGet, "/", nil)
-		response := httptest.NewRecorder()
-
-		server.ServeHTTP(response, request)
-		assertBody(response.Body.String(), "[]\n", t)
-	})
-
 	t.Run("Test users list results", func(t *testing.T) {
 		configuration, _ := config.NewConfig()
-		fakeDB := fakeDB{}
-		fakeDB.users = []*models.User{
-			&models.User{
-				ID:       1,
-				Email:    "joel.st.saunders@gmail.com",
-				Password: "helloooooo",
-			},
+		testUser := models.User{
+			ID:       1,
+			Email:    "joel.st.saunders@gmail.com",
+			Password: auth.HashPassword("helloooooo"),
 		}
+
+		fakeDB := fakeDB{}
+		fakeDB.users = []*models.User{&testUser}
 		server := api.UserRoutes(fakeDB.Users(), configuration)
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
-
+		addAuthHeader(request, testUser.Email, configuration.JWTSecret)
 		server.ServeHTTP(response, request)
 
 		got := response.Body.String()
@@ -178,16 +172,11 @@ func TestUsersAPI(t *testing.T) {
 		server := api.UserRoutes(fakeDB.Users(), configuration)
 
 		request, _ := http.NewRequest(http.MethodGet, "/1", nil)
-		authToken, _ := auth.GenerateToken(testUser.Email)
-		// set the correct token header
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
-
 		response := httptest.NewRecorder()
-
+		addAuthHeader(request, testUser.Email, configuration.JWTSecret)
 		server.ServeHTTP(response, request)
 
 		assertResponseCode(response.Code, http.StatusOK, t)
-
 		expectedUser, _ := json.Marshal(testUser)
 		assertEqualJSON(response.Body.String(), string(expectedUser), t)
 	})
@@ -203,8 +192,8 @@ func TestUsersAPI(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodPost, "/", bytes.NewReader(newUserJSON))
 		request.Header.Set("Content-Type", "application/json")
+		addAuthHeader(request, "pretendemail@test.com", configuration.JWTSecret)
 		response := httptest.NewRecorder()
-
 		server.ServeHTTP(response, request)
 
 		assertResponseCode(response.Code, http.StatusCreated, t)
@@ -213,20 +202,24 @@ func TestUsersAPI(t *testing.T) {
 		want := fmt.Sprintf("{\"id\":0,\"email\":\"%s\"}\n", newUser.Email)
 		assertBody(got, want, t)
 	})
+}
+
+func TestLogin(t *testing.T) {
+	configuration, _ := config.NewConfig()
+
+	testUser := models.User{
+		ID:       1,
+		Email:    "joel.st.saunders@gmail.com",
+		Password: auth.HashPassword("helloooooo"),
+	}
+
+	fakeDB := fakeDB{}
+	fakeDB.users = []*models.User{
+		&testUser,
+	}
+	server := api.UserRoutes(fakeDB.Users(), configuration)
 
 	t.Run("login incorrect credentials", func(t *testing.T) {
-		configuration, _ := config.NewConfig()
-
-		fakeDB := fakeDB{}
-		fakeDB.users = []*models.User{
-			&models.User{
-				ID:       1,
-				Email:    "joel.st.saunders@gmail.com",
-				Password: auth.HashPassword("helloooooo"),
-			},
-		}
-		server := api.UserRoutes(fakeDB.Users(), configuration)
-
 		credentials := map[string]string{"email": "joel.st.saunders@gmail.com", "password": "Password"}
 		credentialsJSON, _ := json.Marshal(credentials)
 
@@ -239,20 +232,6 @@ func TestUsersAPI(t *testing.T) {
 	})
 
 	t.Run("login correct credentials", func(t *testing.T) {
-		configuration, _ := config.NewConfig()
-
-		testUser := models.User{
-			ID:       1,
-			Email:    "joel.st.saunders@gmail.com",
-			Password: auth.HashPassword("helloooooo"),
-		}
-
-		fakeDB := fakeDB{}
-		fakeDB.users = []*models.User{
-			&testUser,
-		}
-		server := api.UserRoutes(fakeDB.Users(), configuration)
-
 		credentials := map[string]string{"email": "joel.st.saunders@gmail.com", "password": "helloooooo"}
 		credentialsJSON, _ := json.Marshal(credentials)
 
@@ -261,7 +240,7 @@ func TestUsersAPI(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		expectedToken, _ := auth.GenerateToken(testUser.Email)
+		expectedToken, _ := auth.GenerateToken(testUser.Email, configuration.JWTSecret)
 
 		assertResponseCode(response.Code, http.StatusOK, t)
 		assertBody(response.Body.String(), fmt.Sprintf("{\"token\":\"%s\"}\n", expectedToken), t)

@@ -14,7 +14,7 @@ type Constants struct {
 		DBUSER     string
 		DBPASSWORD string
 	}
-	JWTSecret string
+	JWTSecret []byte
 }
 
 type Config struct {

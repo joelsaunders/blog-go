@@ -16,17 +16,18 @@ import (
 
 func UserRoutes(userStore repository.UserStore, config *config.Config) *chi.Mux {
 	router := chi.NewRouter()
-	tokenAuth := jwtauth.New("HS256", []byte("my_secret_key"), nil)
+	tokenAuth := jwtauth.New("HS256", config.JWTSecret, nil)
 
 	router.Group(func(router chi.Router) {
 		router.Use(jwtauth.Verifier(tokenAuth))
 		router.Use(jwtauth.Authenticator)
+
 		router.Get("/{userID}", NewUserHandler(userStore).retrieveUser())
+		router.Get("/", NewUserHandler(userStore).getUserList())
+		router.Post("/", NewUserHandler(userStore).createUser())
 	})
 
-	router.Get("/", NewUserHandler(userStore).getUserList())
-	router.Post("/", NewUserHandler(userStore).createUser())
-	router.Post("/login", NewUserHandler(userStore).loginUser())
+	router.Post("/login", NewUserHandler(userStore).loginUser(config.JWTSecret))
 	return router
 }
 
@@ -38,7 +39,7 @@ func NewUserHandler(userStore repository.UserStore) *UserHandler {
 	return &UserHandler{userStore}
 }
 
-func (uh UserHandler) loginUser() http.HandlerFunc {
+func (uh UserHandler) loginUser(jwtKey []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		credentials := userCredentialsPayload{}
 
@@ -54,7 +55,7 @@ func (uh UserHandler) loginUser() http.HandlerFunc {
 			return
 		}
 
-		token, err := auth.GenerateToken(credentials.Email)
+		token, err := auth.GenerateToken(credentials.Email, jwtKey)
 		if err != nil {
 			render.Render(w, r, ErrTokenCreation(err))
 			return

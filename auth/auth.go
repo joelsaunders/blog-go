@@ -11,14 +11,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtKey = []byte("my_secret_key")
-
 type Claims struct {
 	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(email string) (string, error) {
+func GenerateToken(email string, jwtKey []byte) (string, error) {
 	// Declare the expiration time of the token
 	expirationTime := time.Now().Add(10 * time.Minute)
 	// Create the JWT claims, which includes the username and expiry time
