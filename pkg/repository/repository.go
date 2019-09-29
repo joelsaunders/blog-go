@@ -12,3 +12,10 @@ type UserStore interface {
 	GetByID(ctx context.Context, id int) (*models.User, error)
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
 }
+
+type PostStore interface {
+	List(ctx context.Context) ([]*models.Post, error)
+	GetBySlug(ctx context.Context, slug string) (*models.Post, error)
+	Create(ctx context.Context, post *models.Post) (*models.Post, error)
+	Update(ctx context.Context, post *models.Post) (*models.Post, error)
+}

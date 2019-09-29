@@ -4,9 +4,21 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"testing"
+	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/joelsaunders/bilbo-go/pkg/repository/postgres"
 )
+
+func OpenTransaction(t *testing.T) *sqlx.DB {
+	cName := fmt.Sprintf("connection_%d", time.Now().UnixNano())
+	db, err := sqlx.Open("txdb", cName)
+	if err != nil {
+		t.Fatal("could not open db")
+	}
+	return db
+}
 
 func SetUpTestDB(migrationPath string) error {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+

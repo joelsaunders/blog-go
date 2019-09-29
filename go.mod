@@ -9,6 +9,7 @@ require (
 	github.com/go-chi/jwtauth v4.0.3+incompatible
 	github.com/go-chi/render v1.0.1
 	github.com/golang-migrate/migrate/v4 v4.5.0
+	github.com/google/go-cmp v0.2.0
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.2.0
 	github.com/spf13/viper v1.4.0

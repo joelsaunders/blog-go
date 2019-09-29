@@ -32,7 +32,7 @@ func initViper() (Constants, error) {
 	}
 
 	viper.SetDefault("PORT", "8000")
-	viper.SetDefault("JwtSecret", "not so secret")
+	viper.SetDefault("JwtSecret", []byte("not so secret"))
 	var constants Constants
 	err = viper.Unmarshal(&constants)
 	return constants, err

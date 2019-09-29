@@ -27,10 +27,10 @@ func main() {
 		log.Panicln("Database error", err)
 	}
 
-	err = postgres.MigrateDatabase(db, "./migrations")
-	if err != nil {
-		log.Panicln("Migration error", err)
-	}
+	// err = postgres.MigrateDatabase(db, "./migrations")
+	// if err != nil {
+	// 	log.Panicln("Migration error", err)
+	// }
 
 	router := api.Routes(configuration, db)
 

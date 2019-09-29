@@ -2,11 +2,8 @@ package user_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
-	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/joelsaunders/bilbo-go/pkg/models"
 	"github.com/joelsaunders/bilbo-go/pkg/repository/user"
 	"github.com/joelsaunders/bilbo-go/test_utils"
@@ -15,15 +12,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 )
-
-func openTransaction(t *testing.T) *sqlx.DB {
-	cName := fmt.Sprintf("connection_%d", time.Now().UnixNano())
-	db, err := sqlx.Open("txdb", cName)
-	if err != nil {
-		t.Fatal("could not open db")
-	}
-	return db
-}
 
 func TestUsers(t *testing.T) {
 	if testing.Short() {
@@ -34,7 +22,7 @@ func TestUsers(t *testing.T) {
 	txdb.Register("txdb", "postgres", "host=localhost port=15432 user=root password=root dbname=test sslmode=disable")
 
 	t.Run("Test Get Users", func(t *testing.T) {
-		db := openTransaction(t)
+		db := test_utils.OpenTransaction(t)
 		defer db.Close()
 
 		_, err := db.Exec("insert into users (email, password) values ('joel', 'mpassword')")
@@ -58,7 +46,7 @@ func TestUsers(t *testing.T) {
 	})
 
 	t.Run("Test create user", func(t *testing.T) {
-		db := openTransaction(t)
+		db := test_utils.OpenTransaction(t)
 		defer db.Close()
 		userStore := user.PGUserStore{db}
 		ctx := context.Background()
