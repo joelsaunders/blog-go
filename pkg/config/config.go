@@ -22,7 +22,7 @@ type Config struct {
 }
 
 func initViper() (Constants, error) {
-	viper.SetConfigName("bilbo.config")
+	viper.SetConfigName("blog.config")
 	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()

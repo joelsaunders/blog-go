@@ -3,14 +3,14 @@ package api
 import (
 	"net/http"
 
-	"github.com/joelsaunders/bilbo-go/pkg/models"
+	"github.com/joelsaunders/blog-go/pkg/models"
 
 	"github.com/go-chi/render"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/jwtauth"
-	"github.com/joelsaunders/bilbo-go/pkg/config"
-	"github.com/joelsaunders/bilbo-go/pkg/repository"
+	"github.com/joelsaunders/blog-go/pkg/config"
+	"github.com/joelsaunders/blog-go/pkg/repository"
 )
 
 func PostRoutes(postStore repository.PostStore, config *config.Config) *chi.Mux {

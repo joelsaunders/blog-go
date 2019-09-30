@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/joelsaunders/bilbo-go/pkg/auth"
-	"github.com/joelsaunders/bilbo-go/pkg/config"
-	"github.com/joelsaunders/bilbo-go/pkg/models"
-	"github.com/joelsaunders/bilbo-go/pkg/repository"
+	"github.com/joelsaunders/blog-go/pkg/auth"
+	"github.com/joelsaunders/blog-go/pkg/config"
+	"github.com/joelsaunders/blog-go/pkg/models"
+	"github.com/joelsaunders/blog-go/pkg/repository"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/jwtauth"

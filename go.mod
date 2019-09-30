@@ -1,4 +1,4 @@
-module github.com/joelsaunders/bilbo-go
+module github.com/joelsaunders/blog-go
 
 go 1.12
 

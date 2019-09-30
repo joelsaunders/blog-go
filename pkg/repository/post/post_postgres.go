@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/bilbo-go/pkg/models"
+	"github.com/joelsaunders/blog-go/pkg/models"
 )
 
 type PGPostStore struct {

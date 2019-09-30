@@ -2,7 +2,7 @@ PORT=8000
 
 [Postgres]
     URL = "localhost"
-    DBNAME = "bilbo"
+    DBNAME = "blog"
     DBPORT = "15432"
     DBUSER = "root"
     DBPASSWORD = "root"

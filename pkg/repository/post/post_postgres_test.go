@@ -8,9 +8,9 @@ import (
 
 	"github.com/DATA-DOG/go-txdb"
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/bilbo-go/pkg/models"
-	"github.com/joelsaunders/bilbo-go/pkg/repository/post"
-	"github.com/joelsaunders/bilbo-go/test_utils"
+	"github.com/joelsaunders/blog-go/pkg/models"
+	"github.com/joelsaunders/blog-go/pkg/repository/post"
+	"github.com/joelsaunders/blog-go/test_utils"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/google/go-cmp/cmp"

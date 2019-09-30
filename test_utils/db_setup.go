@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/bilbo-go/pkg/repository/postgres"
+	"github.com/joelsaunders/blog-go/pkg/repository/postgres"
 )
 
 func OpenTransaction(t *testing.T) *sqlx.DB {
@@ -23,7 +23,7 @@ func OpenTransaction(t *testing.T) *sqlx.DB {
 func SetUpTestDB(migrationPath string) error {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		"localhost", "15432", "root", "root", "bilbo",
+		"localhost", "15432", "root", "root", "blog",
 	)
 
 	db, err := sql.Open("postgres", psqlInfo)
