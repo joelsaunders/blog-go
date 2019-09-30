@@ -21,17 +21,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joelsaunders/bilbo-go/pkg/api"
 	"github.com/joelsaunders/bilbo-go/pkg/models"
-	"github.com/joelsaunders/bilbo-go/pkg/repository"
 	_ "github.com/lib/pq"
 )
-
-type fakeDB struct {
-	users []*models.User
-}
-
-func (f fakeDB) Users() repository.UserStore {
-	return &fakeUserDB{f.users}
-}
 
 type fakeUserDB struct {
 	users []*models.User
@@ -144,9 +135,9 @@ func TestUsersAPI(t *testing.T) {
 			Password: auth.HashPassword("helloooooo"),
 		}
 
-		fakeDB := fakeDB{}
-		fakeDB.users = []*models.User{&testUser}
-		server := api.UserRoutes(fakeDB.Users(), configuration)
+		userStore := fakeUserDB{}
+		userStore.users = []*models.User{&testUser}
+		server := api.UserRoutes(&userStore, configuration)
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
@@ -167,9 +158,9 @@ func TestUsersAPI(t *testing.T) {
 			Password: auth.HashPassword("helloooooo"),
 		}
 
-		fakeDB := fakeDB{}
-		fakeDB.users = []*models.User{&testUser}
-		server := api.UserRoutes(fakeDB.Users(), configuration)
+		userStore := fakeUserDB{}
+		userStore.users = []*models.User{&testUser}
+		server := api.UserRoutes(&userStore, configuration)
 
 		request, _ := http.NewRequest(http.MethodGet, "/1", nil)
 		response := httptest.NewRecorder()
@@ -184,8 +175,8 @@ func TestUsersAPI(t *testing.T) {
 	t.Run("Test create user", func(t *testing.T) {
 		configuration, _ := config.NewConfig()
 
-		fakeDB := fakeDB{}
-		server := api.UserRoutes(fakeDB.Users(), configuration)
+		userStore := fakeUserDB{}
+		server := api.UserRoutes(&userStore, configuration)
 
 		newUser := models.NewUser{Email: "newperson@new.com", Password: "Password"}
 		newUserJSON, _ := json.Marshal(newUser)
@@ -213,11 +204,9 @@ func TestLogin(t *testing.T) {
 		Password: auth.HashPassword("helloooooo"),
 	}
 
-	fakeDB := fakeDB{}
-	fakeDB.users = []*models.User{
-		&testUser,
-	}
-	server := api.UserRoutes(fakeDB.Users(), configuration)
+	userStore := fakeUserDB{}
+	userStore.users = []*models.User{&testUser}
+	server := api.UserRoutes(&userStore, configuration)
 
 	t.Run("login incorrect credentials", func(t *testing.T) {
 		credentials := map[string]string{"email": "joel.st.saunders@gmail.com", "password": "Password"}

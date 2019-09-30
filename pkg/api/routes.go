@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/jmoiron/sqlx"
 	"github.com/joelsaunders/bilbo-go/pkg/config"
+	"github.com/joelsaunders/bilbo-go/pkg/repository/post"
 	"github.com/joelsaunders/bilbo-go/pkg/repository/user"
 )
 
@@ -22,6 +23,7 @@ func Routes(config *config.Config, db *sqlx.DB) *chi.Mux {
 
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Mount("/user", UserRoutes(&user.PGUserStore{DB: db}, config))
+		r.Mount("/posts", PostRoutes(&post.PGPostStore{DB: db}, config))
 	})
 
 	return router

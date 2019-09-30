@@ -3,14 +3,14 @@ package models
 import "time"
 
 type Post struct {
-	ID          int       `db:"id"`
-	Created     time.Time `db:"created"`
-	Modified    time.Time `db:"modified"`
-	Slug        string    `db:"slug"`
-	Title       string    `db:"title"`
-	Body        string    `db:"body"`
-	AuthorID    int       `db:"author_id"`
-	Picture     string    `db:"picture"`
-	Description string    `db:"description"`
-	Published   bool      `db:"published"`
+	ID          int       `db:"id" json:"id"`
+	Created     time.Time `db:"created" json:"created"`
+	Modified    time.Time `db:"modified" json:"modified"`
+	Slug        string    `db:"slug" json:"slug"`
+	Title       string    `db:"title" json:"title"`
+	Body        string    `db:"body" json:"body"`
+	AuthorID    int       `db:"author_id" json:"author_id`
+	Picture     string    `db:"picture" json:"picture"`
+	Description string    `db:"description" json:"description"`
+	Published   bool      `db:"published" json:"published"`
 }
