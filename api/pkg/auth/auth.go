@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/joelsaunders/blog-go/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/joelsaunders/blog-go/api/pkg/repository"
 )
 
 type Claims struct {

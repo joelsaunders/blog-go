@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/joelsaunders/blog-go/pkg/api"
-	config "github.com/joelsaunders/blog-go/pkg/config"
-	"github.com/joelsaunders/blog-go/pkg/repository/postgres"
+	"github.com/joelsaunders/blog-go/api/pkg/api"
+	config "github.com/joelsaunders/blog-go/api/pkg/config"
+	"github.com/joelsaunders/blog-go/api/pkg/repository/postgres"
 
 	"github.com/go-chi/chi"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -27,10 +27,10 @@ func main() {
 		log.Panicln("Database error", err)
 	}
 
-	// err = postgres.MigrateDatabase(db, "./migrations")
-	// if err != nil {
-	// 	log.Panicln("Migration error", err)
-	// }
+	err = postgres.MigrateDatabase(db, "./migrations")
+	if err != nil {
+		log.Panicln("Migration error", err)
+	}
 
 	router := api.Routes(configuration, db)
 

@@ -11,11 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/joelsaunders/blog-go/test_utils"
-
-	"github.com/joelsaunders/blog-go/pkg/api"
-	"github.com/joelsaunders/blog-go/pkg/config"
-	"github.com/joelsaunders/blog-go/pkg/models"
+	"github.com/joelsaunders/blog-go/api/pkg/api"
+	"github.com/joelsaunders/blog-go/api/pkg/config"
+	"github.com/joelsaunders/blog-go/api/pkg/models"
+	"github.com/joelsaunders/blog-go/api/test_utils"
 )
 
 type fakePostDB struct {

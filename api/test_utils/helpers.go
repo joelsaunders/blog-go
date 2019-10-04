@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/joelsaunders/blog-go/pkg/auth"
+	"github.com/joelsaunders/blog-go/api/pkg/auth"
 )
 
 func AssertResponseCode(got int, want int, t *testing.T) {

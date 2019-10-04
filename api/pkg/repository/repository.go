@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/joelsaunders/blog-go/pkg/models"
+	"github.com/joelsaunders/blog-go/api/pkg/models"
 )
 
 type UserStore interface {

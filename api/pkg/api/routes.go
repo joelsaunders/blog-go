@@ -7,9 +7,10 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/blog-go/pkg/config"
-	"github.com/joelsaunders/blog-go/pkg/repository/post"
-	"github.com/joelsaunders/blog-go/pkg/repository/user"
+
+	"github.com/joelsaunders/blog-go/api/pkg/config"
+	"github.com/joelsaunders/blog-go/api/pkg/repository/post"
+	"github.com/joelsaunders/blog-go/api/pkg/repository/user"
 )
 
 func Routes(config *config.Config, db *sqlx.DB) *chi.Mux {

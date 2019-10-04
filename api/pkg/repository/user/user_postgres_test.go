@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/joelsaunders/blog-go/pkg/models"
-	"github.com/joelsaunders/blog-go/pkg/repository/user"
-	"github.com/joelsaunders/blog-go/test_utils"
+	"github.com/joelsaunders/blog-go/api/pkg/models"
+	"github.com/joelsaunders/blog-go/api/pkg/repository/user"
+	"github.com/joelsaunders/blog-go/api/test_utils"
 
 	"github.com/DATA-DOG/go-txdb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

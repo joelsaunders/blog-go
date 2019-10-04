@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/blog-go/pkg/repository/postgres"
+	"github.com/joelsaunders/blog-go/api/pkg/repository/postgres"
 )
 
 func OpenTransaction(t *testing.T) *sqlx.DB {

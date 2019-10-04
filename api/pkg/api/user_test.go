@@ -13,15 +13,15 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-txdb"
-	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/blog-go/pkg/auth"
-	"github.com/joelsaunders/blog-go/pkg/config"
-	"github.com/joelsaunders/blog-go/test_utils"
-
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/joelsaunders/blog-go/pkg/api"
-	"github.com/joelsaunders/blog-go/pkg/models"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+
+	"github.com/joelsaunders/blog-go/api/pkg/api"
+	"github.com/joelsaunders/blog-go/api/pkg/auth"
+	"github.com/joelsaunders/blog-go/api/pkg/config"
+	"github.com/joelsaunders/blog-go/api/pkg/models"
+	"github.com/joelsaunders/blog-go/api/test_utils"
 )
 
 type fakeUserDB struct {

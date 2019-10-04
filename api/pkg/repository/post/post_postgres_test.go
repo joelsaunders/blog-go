@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-txdb"
-	"github.com/jmoiron/sqlx"
-	"github.com/joelsaunders/blog-go/pkg/models"
-	"github.com/joelsaunders/blog-go/pkg/repository/post"
-	"github.com/joelsaunders/blog-go/test_utils"
-
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/google/go-cmp/cmp"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+
+	"github.com/joelsaunders/blog-go/api/pkg/models"
+	"github.com/joelsaunders/blog-go/api/pkg/repository/post"
+	"github.com/joelsaunders/blog-go/api/test_utils"
 )
 
 func insertUser(email string, db *sqlx.DB, t *testing.T) (userID int) {
