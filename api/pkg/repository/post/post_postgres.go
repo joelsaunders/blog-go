@@ -101,6 +101,7 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 		if err != nil {
 			return nil, err
 		}
+		p.Tags = &[]string{"hello"}
 		posts = append(posts, &p)
 	}
 
@@ -110,6 +111,7 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 func (ps *PGPostStore) GetBySlug(ctx context.Context, slug string) (*models.Post, error) {
 	post := models.Post{}
 	err := ps.DB.Get(&post, "SELECT * FROM posts WHERE slug=$1", slug)
+	post.Tags = &[]string{"hello"}
 
 	if err != nil {
 		return nil, err

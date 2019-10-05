@@ -32,6 +32,7 @@ func testDataSetup(db *sqlx.DB) {
 
 	if err != nil {
 		log.Println("user could not be created")
+		return
 	}
 
 	testPost := models.Post{
@@ -40,7 +41,7 @@ func testDataSetup(db *sqlx.DB) {
 		Slug:        "test slug",
 		Title:       "test title",
 		Body:        "test body",
-		Picture:     "test picture",
+		Picture:     "https://i.ytimg.com/vi/Vp7nW2SP6H8/maxresdefault.jpg",
 		Description: "test description",
 		Published:   true,
 		AuthorID:    user.ID,
