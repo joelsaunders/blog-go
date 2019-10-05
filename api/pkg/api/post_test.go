@@ -82,6 +82,7 @@ func TestPostAPI(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    1,
+			Tags:        []string{"hello1"},
 		}
 
 		postStore := fakePostDB{[]*models.Post{&testPost}}

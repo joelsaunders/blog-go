@@ -15,4 +15,15 @@ CREATE TABLE posts (
     description TEXT NOT NULL,
     published BOOLEAN NOT NULL,
     author_id integer references users (id)
-)
+);
+
+CREATE TABLE tags (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE posttags (
+    id SERIAL PRIMARY KEY,
+    tag_id integer references tags (id),
+    post_id integer references posts (id)
+);

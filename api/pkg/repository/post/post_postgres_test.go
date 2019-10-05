@@ -28,6 +28,45 @@ func insertUser(email string, db *sqlx.DB, t *testing.T) (userID int) {
 	return
 }
 
+func addTag(postID int, tagName string, db *sqlx.DB, t *testing.T) {
+	var tagID int
+
+	err := db.QueryRowx(
+		fmt.Sprintf(
+			`insert into tags (
+				name
+			) values (
+				'%s'
+			) returning id;`,
+			tagName,
+		),
+	).Scan(&tagID)
+
+	if err != nil {
+		t.Errorf("could not add tag %s to post %d because of %s", tagName, postID, err)
+		return
+	}
+
+	var relationID int
+	err = db.QueryRowx(
+		fmt.Sprintf(
+			`insert into posttags (
+				tag_id,
+				post_id
+			) values (
+				%d,
+				%d 
+			) returning id;`,
+			tagID,
+			postID,
+		),
+	).Scan(&relationID)
+
+	if err != nil {
+		t.Errorf("could not relate post %d to tag %d because of %s", postID, tagID, err)
+	}
+}
+
 func insertPost(post *models.Post, db *sqlx.DB, t *testing.T) (postID int) {
 	err := db.QueryRowx(
 		fmt.Sprintf(
@@ -100,9 +139,11 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
+			Tags:        []string{"test tag"},
 		}
 
-		insertPost(&testPost, db, t)
+		insertedPostID := insertPost(&testPost, db, t)
+		addTag(insertedPostID, testPost.Tags[0], db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()
@@ -137,14 +178,20 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
+			Tags:        []string{"test tag", "test tag 2"},
 		}
 
-		insertPost(&testPost, db, t)
+		insertedPostID := insertPost(&testPost, db, t)
+		addTag(insertedPostID, testPost.Tags[0], db, t)
+		addTag(insertedPostID, testPost.Tags[1], db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()
 
 		post, err := postStore.GetBySlug(ctx, testPost.Slug)
+		if err != nil {
+			t.Fatalf("post not created: %s", err)
+		}
 		testPost.ID = post.ID
 
 		if err != nil {
@@ -170,6 +217,7 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
+			Tags:        []string{"hello", "tag 2"},
 		}
 
 		postStore := post.PGPostStore{db}
@@ -204,6 +252,7 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
+			Tags:        []string{},
 		}
 
 		postID := insertPost(&testPost, db, t)

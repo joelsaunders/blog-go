@@ -13,5 +13,5 @@ type Post struct {
 	Picture     string    `db:"picture" json:"picture"`
 	Description string    `db:"description" json:"description"`
 	Published   bool      `db:"published" json:"published"`
-	Tags        *[]string `json:"tags"`
+	Tags        []string  `db:"tags" json:"tags"`
 }

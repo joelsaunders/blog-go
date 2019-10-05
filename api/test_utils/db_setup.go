@@ -37,7 +37,7 @@ func SetUpTestDB(migrationPath string) error {
 		return err
 	}
 
-	_, err = db.Exec("drop database test")
+	db.Exec("drop database test")
 	_, err = db.Exec("create database test")
 
 	if err != nil {
