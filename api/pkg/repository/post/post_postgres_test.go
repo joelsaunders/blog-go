@@ -28,7 +28,7 @@ func insertUser(email string, db *sqlx.DB, t *testing.T) (userID int) {
 	return
 }
 
-func addTag(postID int, tagName string, db *sqlx.DB, t *testing.T) {
+func createTag(tagName string, db *sqlx.DB, t *testing.T) int {
 	var tagID int
 
 	err := db.QueryRowx(
@@ -43,12 +43,17 @@ func addTag(postID int, tagName string, db *sqlx.DB, t *testing.T) {
 	).Scan(&tagID)
 
 	if err != nil {
-		t.Errorf("could not add tag %s to post %d because of %s", tagName, postID, err)
-		return
+		t.Errorf("could not add tag %s because of %s", tagName, err)
 	}
 
+	return tagID
+}
+
+func addTag(postID int, tagName string, db *sqlx.DB, t *testing.T) {
+	tagID := createTag(tagName, db, t)
+
 	var relationID int
-	err = db.QueryRowx(
+	err := db.QueryRowx(
 		fmt.Sprintf(
 			`insert into posttags (
 				tag_id,
@@ -219,6 +224,9 @@ func TestPosts(t *testing.T) {
 			AuthorID:    userID,
 			Tags:        []string{"hello", "tag 2"},
 		}
+		// create the tags that this post needs in order to be createable
+		createTag("hello", db, t)
+		createTag("tag 2", db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()

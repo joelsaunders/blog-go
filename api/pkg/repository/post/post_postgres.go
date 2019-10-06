@@ -17,18 +17,7 @@ func (ps PGPostStore) addTags(ctx context.Context, postID int, tags []string) er
 	var tagID int
 
 	for _, tagName := range tags {
-		err := ps.DB.QueryRowxContext(
-			ctx,
-			fmt.Sprintf(
-				`insert into tags (
-					name
-				) values (
-					'%s'
-				) returning id;`,
-				tagName,
-			),
-		).Scan(&tagID)
-
+		err := ps.DB.GetContext(ctx, &tagID, "SELECT id FROM tags WHERE name=$1", tagName)
 		if err != nil {
 			return fmt.Errorf("could not add tag %s to post %d because of %s", tagName, postID, err)
 		}
@@ -87,6 +76,9 @@ func (ps *PGPostStore) Create(ctx context.Context, post *models.Post) (*models.P
 		return nil, err
 	}
 	err = ps.addTags(ctx, lastInsert.ID, post.Tags)
+	if err != nil {
+		return nil, err
+	}
 
 	createdPost, err := ps.GetBySlug(ctx, lastInsert.Slug)
 	if err != nil {
@@ -97,6 +89,7 @@ func (ps *PGPostStore) Create(ctx context.Context, post *models.Post) (*models.P
 }
 
 func (ps *PGPostStore) Update(ctx context.Context, post *models.Post) (*models.Post, error) {
+	// TODO: add/remove tags
 	row := ps.DB.QueryRowxContext(
 		ctx,
 		`UPDATE posts SET 
