@@ -9,6 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/joelsaunders/blog-go/api/pkg/api"
+	"github.com/joelsaunders/blog-go/api/pkg/auth"
 	config "github.com/joelsaunders/blog-go/api/pkg/config"
 	"github.com/joelsaunders/blog-go/api/pkg/models"
 	"github.com/joelsaunders/blog-go/api/pkg/repository/post"
@@ -24,7 +25,7 @@ func testDataSetup(db *sqlx.DB) {
 
 	newUser := &models.NewUser{
 		Email:    "joel.st.saunders@gmail.com",
-		Password: "password",
+		Password: auth.HashPassword("password"),
 	}
 	userStore := &user.PGUserStore{DB: db}
 

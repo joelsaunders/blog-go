@@ -52,8 +52,8 @@ export const createPost = (data) => async (dispatch, getState) => {
     }
 };
 
-export const signIn = (user, token) => {
-    const payload = {user: user, token: token};
+export const signIn = (email, token) => {
+    const payload = {user: email, token: token};
     saveState({auth: payload});
     return {type: SIGN_IN, payload: payload}
 };
