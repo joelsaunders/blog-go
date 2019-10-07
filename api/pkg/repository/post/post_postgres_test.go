@@ -260,10 +260,11 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
-			Tags:        []string{},
+			Tags:        []string{"hello"},
 		}
 
 		postID := insertPost(&testPost, db, t)
+		addTag(postID, testPost.Tags[0], db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()
@@ -277,6 +278,10 @@ func TestPosts(t *testing.T) {
 		testPost.Description = "new description"
 		testPost.Published = false
 		testPost.AuthorID = user2ID
+		testPost.Tags = []string{"new tag"}
+
+		// ensure the new tag exists
+		createTag(testPost.Tags[0], db, t)
 
 		updatedPost, err := postStore.Update(ctx, &testPost)
 		if err != nil {
