@@ -22,7 +22,7 @@ export const editPost = (postId, data) => async (dispatch, getState) => {
         const response = await theBookOfJoel.patch(
             `/api/v1/posts/${postId}`,
             data,
-            {headers: {Authorization: `Token ${token}`}}
+            {headers: {Authorization: `Bearer ${token}`}}
         );
         dispatch({type: EDIT_POST, payload: response.data})
     } catch (err) {
@@ -41,7 +41,7 @@ export const createPost = (data) => async (dispatch, getState) => {
         const response = await theBookOfJoel.post(
             `api/v1/posts`,
             {...data, ...{author: user, published: true}},
-            {headers: {Authorization: `Token ${token}`}}
+            {headers: {Authorization: `Bearer ${token}`}}
         );
         dispatch({type: CREATE_POST, payload: response.data})
     } catch (err) {

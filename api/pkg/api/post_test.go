@@ -82,6 +82,7 @@ func TestPostAPI(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    1,
+			AuthorEmail: "joel",
 			Tags:        []string{"hello1"},
 		}
 
@@ -142,7 +143,7 @@ func TestPostAPI(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodPost, "/", bytes.NewReader(newPostJSON))
 		request.Header.Set("Content-Type", "application/json")
-		test_utils.AddAuthHeader(request, "joel", configuration.JWTSecret)
+		test_utils.AddAuthHeader(request, 1, "joel", configuration.JWTSecret)
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
@@ -193,7 +194,7 @@ func TestPostAPI(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/%s", existingPost.Slug), bytes.NewReader(modifiedPostJSON))
 		request.Header.Set("Content-Type", "application/json")
-		test_utils.AddAuthHeader(request, "joel", configuration.JWTSecret)
+		test_utils.AddAuthHeader(request, 1, "joel", configuration.JWTSecret)
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 

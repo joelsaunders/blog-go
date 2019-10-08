@@ -35,8 +35,8 @@ func AssertEqualJSON(s1, s2 string, t *testing.T) {
 	}
 }
 
-func AddAuthHeader(request *http.Request, email string, secret []byte) {
+func AddAuthHeader(request *http.Request, id int, email string, secret []byte) {
 	// set the correct token header
-	authToken, _ := auth.GenerateToken(email, secret)
+	authToken, _ := auth.GenerateToken(id, email, secret)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
 }

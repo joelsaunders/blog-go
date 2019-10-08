@@ -48,14 +48,14 @@ func (uh UserHandler) loginUser(jwtKey []byte) http.HandlerFunc {
 			return
 		}
 
-		err := auth.CheckCredentials(r.Context(), credentials.Email, credentials.Password, uh.store)
+		userID, err := auth.CheckCredentials(r.Context(), credentials.Email, credentials.Password, uh.store)
 
 		if err != nil {
 			render.Render(w, r, ErrAuthenication(err))
 			return
 		}
 
-		token, err := auth.GenerateToken(credentials.Email, jwtKey)
+		token, err := auth.GenerateToken(userID, credentials.Email, jwtKey)
 		if err != nil {
 			render.Render(w, r, ErrTokenCreation(err))
 			return

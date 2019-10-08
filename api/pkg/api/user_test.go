@@ -110,7 +110,7 @@ func TestUsersAPIIntegration(t *testing.T) {
 		defer db.Close()
 
 		request, _ := http.NewRequest(http.MethodGet, "/api/v1/user", nil)
-		addAuthHeader(request, "fakeemailthatdoesnotexist@gmail.com", configuration.JWTSecret)
+		test_utils.AddAuthHeader(request, 1, "fakeemailthatdoesnotexist@gmail.com", configuration.JWTSecret)
 		response := httptest.NewRecorder()
 		server := api.Routes(configuration, db)
 
@@ -118,12 +118,6 @@ func TestUsersAPIIntegration(t *testing.T) {
 
 		assertBody(response.Body.String(), "[]\n", t)
 	})
-}
-
-func addAuthHeader(request *http.Request, email string, secret []byte) {
-	// set the correct token header
-	authToken, _ := auth.GenerateToken(email, secret)
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
 }
 
 func TestUsersAPI(t *testing.T) {
@@ -141,7 +135,7 @@ func TestUsersAPI(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
-		addAuthHeader(request, testUser.Email, configuration.JWTSecret)
+		test_utils.AddAuthHeader(request, testUser.ID, testUser.Email, configuration.JWTSecret)
 		server.ServeHTTP(response, request)
 
 		got := response.Body.String()
@@ -164,7 +158,7 @@ func TestUsersAPI(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodGet, "/1", nil)
 		response := httptest.NewRecorder()
-		addAuthHeader(request, testUser.Email, configuration.JWTSecret)
+		test_utils.AddAuthHeader(request, 1, testUser.Email, configuration.JWTSecret)
 		server.ServeHTTP(response, request)
 
 		assertResponseCode(response.Code, http.StatusOK, t)
@@ -183,7 +177,7 @@ func TestUsersAPI(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodPost, "/", bytes.NewReader(newUserJSON))
 		request.Header.Set("Content-Type", "application/json")
-		addAuthHeader(request, "pretendemail@test.com", configuration.JWTSecret)
+		test_utils.AddAuthHeader(request, 1, "pretendemail@test.com", configuration.JWTSecret)
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
@@ -229,7 +223,7 @@ func TestLogin(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		expectedToken, _ := auth.GenerateToken(testUser.Email, configuration.JWTSecret)
+		expectedToken, _ := auth.GenerateToken(testUser.ID, testUser.Email, configuration.JWTSecret)
 
 		assertResponseCode(response.Code, http.StatusOK, t)
 		assertBody(response.Body.String(), fmt.Sprintf("{\"token\":\"%s\"}\n", expectedToken), t)

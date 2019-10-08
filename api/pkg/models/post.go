@@ -9,7 +9,8 @@ type Post struct {
 	Slug        string    `db:"slug" json:"slug"`
 	Title       string    `db:"title" json:"title"`
 	Body        string    `db:"body" json:"body"`
-	AuthorID    int       `db:"author_id" json:"author"`
+	AuthorID    int       `db:"author_id" json:"author_id"`
+	AuthorEmail string    `db:"author_email" json:"author"`
 	Picture     string    `db:"picture" json:"picture"`
 	Description string    `db:"description" json:"description"`
 	Published   bool      `db:"published" json:"published"`

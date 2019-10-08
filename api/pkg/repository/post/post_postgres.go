@@ -30,7 +30,6 @@ func (ps *PGPostStore) Create(ctx context.Context, post *models.Post) (*models.P
 	) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, slug`
 
 	var lastInsert lastInsertDetails
-
 	err := ps.DB.QueryRowxContext(
 		ctx,
 		query,
@@ -114,7 +113,19 @@ func (ps *PGPostStore) Update(ctx context.Context, post *models.Post) (*models.P
 }
 
 func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
-	query := "SELECT * FROM posts"
+	query := `SELECT 
+		p.slug,
+		p.id,
+		p.created,
+		p.modified,
+		p.title,
+		p.body,
+		p.picture,
+		p.description,
+		p.published,
+		p.author_id,
+		u.email as author_email
+	FROM posts p INNER JOIN users u ON u.id = p.author_id`
 	rows, err := ps.DB.QueryxContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -141,8 +152,22 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 }
 
 func (ps *PGPostStore) GetBySlug(ctx context.Context, slug string) (*models.Post, error) {
+	query := `SELECT 
+		p.slug,
+		p.id,
+		p.created,
+		p.modified,
+		p.title,
+		p.body,
+		p.picture,
+		p.description,
+		p.published,
+		p.author_id,
+		u.email as author_email
+	FROM posts p INNER JOIN users u ON u.id = p.author_id
+	WHERE slug=$1;`
 	post := models.Post{}
-	err := ps.DB.Get(&post, "SELECT * FROM posts WHERE slug=$1", slug)
+	err := ps.DB.Get(&post, query, slug)
 	if err != nil {
 		return nil, err
 	}

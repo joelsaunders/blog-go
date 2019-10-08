@@ -68,6 +68,11 @@ func (ph PostHandler) createPost() http.HandlerFunc {
 			return
 		}
 
+		// set the author id automatically forl creation of posts
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		userID := int(claims["id"].(float64))
+		newPost.Post.AuthorID = userID
+
 		post, err := ph.store.Create(r.Context(), newPost.Post)
 
 		if err != nil {

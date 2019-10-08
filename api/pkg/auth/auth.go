@@ -13,15 +13,17 @@ import (
 )
 
 type Claims struct {
+	ID    int    `json:"id"`
 	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(email string, jwtKey []byte) (string, error) {
+func GenerateToken(id int, email string, jwtKey []byte) (string, error) {
 	// Declare the expiration time of the token
-	expirationTime := time.Now().Add(10 * time.Minute)
+	expirationTime := time.Now().Add(20 * time.Minute)
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &Claims{
+		ID:    id,
 		Email: email,
 		StandardClaims: jwt.StandardClaims{
 			// In JWT, the expiry time is expressed as unix milliseconds
@@ -45,16 +47,16 @@ func HashPassword(password string) string {
 	return hashedPassword
 }
 
-func CheckCredentials(ctx context.Context, email, password string, store repository.UserStore) error {
+func CheckCredentials(ctx context.Context, email, password string, store repository.UserStore) (int, error) {
 	storeUser, err := store.GetByEmail(ctx, email)
 	if err != nil {
-		return fmt.Errorf("could not retreive user to check credentials: %s", err)
+		return 0, fmt.Errorf("could not retreive user to check credentials: %s", err)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(storeUser.Password), []byte(password))
 
 	if err != nil {
-		return fmt.Errorf("authenication failed: %s", err)
+		return 0, fmt.Errorf("authenication failed: %s", err)
 	}
-	return nil
+	return storeUser.ID, nil
 }

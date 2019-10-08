@@ -132,7 +132,8 @@ func TestPosts(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
 		defer db.Close()
 
-		userID := insertUser("joel", db, t)
+		userEmail := "joel"
+		userID := insertUser(userEmail, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -144,6 +145,7 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
+			AuthorEmail: userEmail,
 			Tags:        []string{"test tag"},
 		}
 
@@ -171,7 +173,8 @@ func TestPosts(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
 		defer db.Close()
 
-		userID := insertUser("joel", db, t)
+		userEmail := "joel"
+		userID := insertUser(userEmail, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -183,6 +186,7 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
+			AuthorEmail: userEmail,
 			Tags:        []string{"test tag", "test tag 2"},
 		}
 
@@ -210,7 +214,8 @@ func TestPosts(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
 		defer db.Close()
 
-		userID := insertUser("joel", db, t)
+		userEmail := "joel"
+		userID := insertUser(userEmail, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -222,6 +227,7 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
+			AuthorEmail: userEmail,
 			Tags:        []string{"hello", "tag 2"},
 		}
 		// create the tags that this post needs in order to be createable
@@ -247,8 +253,10 @@ func TestPosts(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
 		defer db.Close()
 
-		userID := insertUser("joel", db, t)
-		user2ID := insertUser("jo", db, t)
+		userEmail := "joel"
+		userID := insertUser(userEmail, db, t)
+		user2Email := "jo"
+		user2ID := insertUser(user2Email, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -260,6 +268,7 @@ func TestPosts(t *testing.T) {
 			Description: "test description",
 			Published:   true,
 			AuthorID:    userID,
+			AuthorEmail: userEmail,
 			Tags:        []string{"hello"},
 		}
 
@@ -279,6 +288,7 @@ func TestPosts(t *testing.T) {
 		testPost.Published = false
 		testPost.AuthorID = user2ID
 		testPost.Tags = []string{"new tag"}
+		testPost.AuthorEmail = user2Email
 
 		// ensure the new tag exists
 		createTag(testPost.Tags[0], db, t)
