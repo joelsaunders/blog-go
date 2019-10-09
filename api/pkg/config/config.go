@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strings"
+
 	_ "github.com/lib/pq"
 	viper "github.com/spf13/viper"
 )
@@ -24,6 +26,8 @@ type Config struct {
 func initViper() (Constants, error) {
 	viper.SetConfigName("blog.config")
 	viper.AddConfigPath(".")
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 
@@ -32,6 +36,7 @@ func initViper() (Constants, error) {
 	}
 
 	viper.SetDefault("PORT", "8000")
+	// TODO: read this properly from env var
 	viper.SetDefault("JwtSecret", []byte("not so secret"))
 	var constants Constants
 	err = viper.Unmarshal(&constants)

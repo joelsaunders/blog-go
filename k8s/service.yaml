@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: thebookofjoel-nginx
+  namespace: gotest
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    name: thebookofjoel-main
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thebookofjoel-backend
+  namespace: gotest
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8000
+  selector:
+    name: thebookofjoel-main

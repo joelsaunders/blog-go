@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: thebookofjoel
+  namespace: gotest
+spec:
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        name: thebookofjoel-main
+    spec:
+      containers:
+        - name: backend
+          image: backend
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DEPLOYED
+              value: "True"
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-host
+                  key: db-host
+            - name: POSTGRES_DBPORT
+              valueFrom:
+                secretKeyRef:
+                  name: db-port
+                  key: db-port
+            - name: POSTGRES_DBPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-password
+                  key: db-password
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
