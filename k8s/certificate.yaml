@@ -8,7 +8,7 @@ spec:
   dnsNames:
   - gotest.thebookofjoel.com
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt-prod
     kind: ClusterIssuer
   acme:
     config:
