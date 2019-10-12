@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -40,7 +41,8 @@ func (ph PostHandler) getPostList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		posts, err := ph.store.List(r.Context())
 		if err != nil {
-			http.Error(w, http.StatusText(500), 500)
+			log.Println(err)
+			render.Render(w, r, ErrDatabase(err))
 		}
 		render.JSON(w, r, posts)
 	}
