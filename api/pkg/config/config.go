@@ -1,9 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 
-	_ "github.com/lib/pq"
 	viper "github.com/spf13/viper"
 )
 
@@ -36,8 +36,8 @@ func initViper() (Constants, error) {
 	}
 
 	viper.SetDefault("PORT", "8000")
-	// TODO: read this properly from env var
-	viper.SetDefault("JwtSecret", []byte("not so secret"))
+	viper.Set("JWTSecret", []byte(viper.GetString("JWTSecret")))
+	fmt.Println(viper.GetString("JWTSecret"))
 	var constants Constants
 	err = viper.Unmarshal(&constants)
 	return constants, err
