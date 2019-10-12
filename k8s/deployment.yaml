@@ -33,6 +33,10 @@ spec:
                 secretKeyRef:
                   name: db-password
                   key: db-password
+            - name: POSTGRES_DBUSER
+              value: gotestuser2
+            - name: POSTGRES_DBNAME
+              value: gotest
         - name: nginx
           image: nginx
           ports:
