@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -28,6 +29,7 @@ func NewDatabase(url, port, user, password, name string) (*sqlx.DB, error) {
 	}
 
 	log.Println("successfully connected to db")
+	db.SetConnMaxLifetime(time.Minute * 30)
 	return db, nil
 }
 
