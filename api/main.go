@@ -78,7 +78,7 @@ func main() {
 
 	router := api.Routes(configuration, db)
 
-	testDataSetup(db)
+	// testDataSetup(db)
 
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		log.Printf("%s %s\n", method, route) // Walk and print out all routes
