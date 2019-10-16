@@ -40,6 +40,7 @@ func Routes(config *config.Config, db *sqlx.DB) *chi.Mux {
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Mount("/user", UserRoutes(&user.PGUserStore{DB: db}, config))
 		r.Mount("/posts", PostRoutes(&post.PGPostStore{DB: db}, config))
+		r.Get("/sitemap.xml", GetSitemap(&post.PGPostStore{DB: db}, config))
 	})
 
 	return router
