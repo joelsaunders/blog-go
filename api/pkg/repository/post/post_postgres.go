@@ -125,7 +125,7 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 		p.published,
 		p.author_id,
 		u.email as author_email
-	FROM posts p INNER JOIN users u ON u.id = p.author_id`
+	FROM posts p INNER JOIN users u ON u.id = p.author_id ORDER BY p.created desc`
 	rows, err := ps.DB.QueryxContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -140,11 +140,11 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 		if err != nil {
 			return nil, err
 		}
-		tags, err := ps.getTags(ctx, p.ID)
-		if err != nil {
-			return nil, err
-		}
-		p.Tags = tags
+		// tags, err := ps.getTags(ctx, p.ID)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		p.Tags = make([]string, 0)
 		posts = append(posts, &p)
 	}
 
