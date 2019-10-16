@@ -136,8 +136,27 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 		p.description,
 		p.published,
 		p.author_id,
-		u.email as author_email
-	FROM posts p INNER JOIN users u ON u.id = p.author_id ORDER BY p.created desc`
+		u.email as author_email,
+		array_agg(t.name) as tags
+	FROM posts p
+	INNER JOIN users u ON u.id = p.author_id
+	INNER JOIN posttags pt ON pt.post_id = p.id
+	INNER JOIN tags t ON t.id = pt.tag_id
+	GROUP BY (
+		p.slug,
+		p.id,
+		p.created,
+		p.modified,
+		p.title,
+		p.body,
+		p.picture,
+		p.description,
+		p.published,
+		p.author_id,
+		author_email
+	)
+	ORDER BY p.created desc
+	`
 	rows, err := ps.DB.QueryxContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -148,15 +167,11 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 
 	for rows.Next() {
 		var p models.Post
+		p.Tags = make([]string, 0)
 		err = rows.StructScan(&p)
 		if err != nil {
 			return nil, err
 		}
-		// tags, err := ps.getTags(ctx, p.ID)
-		// if err != nil {
-		// 	return nil, err
-		// }
-		p.Tags = make([]string, 0)
 		posts = append(posts, &p)
 	}
 
@@ -175,20 +190,31 @@ func (ps *PGPostStore) GetBySlug(ctx context.Context, slug string) (*models.Post
 		p.description,
 		p.published,
 		p.author_id,
-		u.email as author_email
+		u.email as author_email,
+		array_agg(t.name) as tags
 	FROM posts p INNER JOIN users u ON u.id = p.author_id
-	WHERE slug=$1;`
+	INNER JOIN posttags pt ON pt.post_id = p.id
+	INNER JOIN tags t ON t.id = pt.tag_id
+	WHERE slug=$1
+	GROUP BY (
+		p.slug,
+		p.id,
+		p.created,
+		p.modified,
+		p.title,
+		p.body,
+		p.picture,
+		p.description,
+		p.published,
+		p.author_id,
+		author_email
+	);`
 	post := models.Post{}
+	post.Tags = make([]string, 0)
 	err := ps.DB.Get(&post, query, slug)
 	if err != nil {
 		return nil, err
 	}
-
-	tags, err := ps.getTags(ctx, post.ID)
-	if err != nil {
-		return nil, err
-	}
-	post.Tags = tags
 	return &post, nil
 }
 

@@ -23,7 +23,7 @@ func OpenTransaction(t *testing.T) *sqlx.DB {
 func SetUpTestDB(migrationPath string) error {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		"localhost", "15432", "root", "root", "blog",
+		"localhost", "15432", "root", "root", "gotest",
 	)
 
 	db, err := sql.Open("postgres", psqlInfo)
