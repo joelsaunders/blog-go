@@ -34,7 +34,7 @@ spec:
                   name: db-password
                   key: db-password
             - name: POSTGRES_DBUSER
-              value: gotestuser2
+              value: gotest
             - name: POSTGRES_DBNAME
               value: gotest
         - name: nginx
