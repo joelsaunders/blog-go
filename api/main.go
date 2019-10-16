@@ -65,11 +65,11 @@ func main() {
 
 	db, err := postgres.NewDatabase(configuration.Postgres.URL, configuration.Postgres.DBPORT,
 		configuration.Postgres.DBUSER, configuration.Postgres.DBPASSWORD, configuration.Postgres.DBNAME)
-	defer db.Close()
 
 	if err != nil {
 		log.Panicln("Database error", err)
 	}
+	defer db.Close()
 
 	err = postgres.MigrateDatabase(db, "./migrations")
 	if err != nil {
@@ -78,7 +78,7 @@ func main() {
 
 	router := api.Routes(configuration, db)
 
-	// testDataSetup(db)
+	testDataSetup(db)
 
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		log.Printf("%s %s\n", method, route) // Walk and print out all routes
