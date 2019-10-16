@@ -1,8 +1,9 @@
 PORT=8000
+JWTSecret="inconfig"
 
 [Postgres]
     URL = "localhost"
-    DBNAME = "blog"
+    DBNAME = "gotest"
     DBPORT = "15432"
     DBUSER = "root"
     DBPASSWORD = "root"
