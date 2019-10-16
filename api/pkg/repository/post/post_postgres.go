@@ -26,8 +26,18 @@ func (ps *PGPostStore) Create(ctx context.Context, post *models.Post) (*models.P
 		picture,
 		description,
 		published,
-		author_id
-	) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, slug`
+		author_id,
+		modified,
+		created
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, slug`
+
+	if post.Created.IsZero() {
+		post.Created = time.Now().UTC()
+	}
+
+	if post.Modified.IsZero() {
+		post.Modified = time.Now().UTC()
+	}
 
 	var lastInsert lastInsertDetails
 	err := ps.DB.QueryRowxContext(
@@ -40,6 +50,8 @@ func (ps *PGPostStore) Create(ctx context.Context, post *models.Post) (*models.P
 		post.Description,
 		post.Published,
 		post.AuthorID,
+		post.Modified,
+		post.Created,
 	).StructScan(&lastInsert)
 	if err != nil {
 		return nil, err
