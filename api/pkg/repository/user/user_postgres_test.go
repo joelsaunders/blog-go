@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/joelsaunders/blog-go/api/pkg/models"
 	"github.com/joelsaunders/blog-go/api/pkg/repository/user"
 	"github.com/joelsaunders/blog-go/api/test_utils"
@@ -43,6 +44,32 @@ func TestUsers(t *testing.T) {
 		if len(users) != 1 {
 			t.Fatalf("expected one user but got %d", len(users))
 		}
+	})
+
+	t.Run("test update user", func(t *testing.T) {
+		db := test_utils.OpenTransaction(t)
+		defer db.Close()
+
+		var userID int
+		err := db.QueryRowx("insert into users (email, password) values ('joel', 'mpassword') returning id").Scan(&userID)
+
+		if err != nil {
+			t.Fatalf("could not insert user: %s", err)
+		}
+
+		userStore := user.PGUserStore{db}
+		ctx := context.Background()
+
+		newUser := &models.User{userID, "newemail", "newpassword"}
+		user, err := userStore.Update(ctx, newUser)
+		if err != nil {
+			t.Fatalf("could not update user: %s", err)
+		}
+
+		if !cmp.Equal(user, newUser) {
+			t.Fatalf("user %v not equal to expected %v", user, newUser)
+		}
+
 	})
 
 	t.Run("Test create user", func(t *testing.T) {

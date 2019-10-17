@@ -23,6 +23,7 @@ func UserRoutes(userStore repository.UserStore, config *config.Config) *chi.Mux 
 		router.Use(jwtauth.Authenticator)
 
 		router.Get("/{userID}", NewUserHandler(userStore).retrieveUser())
+		router.Patch("/{userID}", NewUserHandler(userStore).updateUserPassword())
 		router.Get("/", NewUserHandler(userStore).getUserList())
 		router.Post("/", NewUserHandler(userStore).createUser())
 	})
@@ -93,6 +94,38 @@ func (uh UserHandler) getUserList() http.HandlerFunc {
 	}
 }
 
+func (uh UserHandler) updateUserPassword() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
+		ctx := r.Context()
+		if err != nil {
+			render.Render(w, r, ErrInvalidRequest(err))
+		}
+
+		user, err := uh.store.GetByID(ctx, userID)
+		if err != nil {
+			render.Render(w, r, ErrInvalidRequest(err))
+			return
+		}
+
+		passwordChangePayload := &PasswordChangePayload{}
+		if err := render.Bind(r, passwordChangePayload); err != nil {
+			render.Render(w, r, ErrInvalidRequest(err))
+			return
+		}
+
+		user.Password = passwordChangePayload.Password
+		user, err = uh.store.Update(ctx, user)
+
+		if err != nil {
+			render.Render(w, r, ErrDatabase(err))
+			return
+		}
+		render.Status(r, http.StatusOK)
+		render.JSON(w, r, user)
+	}
+}
+
 func (uh UserHandler) createUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newUser := newUserPayload{}
@@ -132,5 +165,14 @@ type newUserPayload struct {
 
 func (nu *newUserPayload) Bind(r *http.Request) error {
 	nu.Password = auth.HashPassword(nu.Password)
+	return nil
+}
+
+type PasswordChangePayload struct {
+	Password string `json:"password"`
+}
+
+func (pcp *PasswordChangePayload) Bind(r *http.Request) error {
+	pcp.Password = auth.HashPassword(pcp.Password)
 	return nil
 }

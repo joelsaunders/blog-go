@@ -32,4 +32,5 @@ require (
 	golang.org/x/sys v0.0.0-20191002091554-b397fe3ad8ed // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.2.4 // indirect
+	gotest.tools v2.2.0+incompatible
 )

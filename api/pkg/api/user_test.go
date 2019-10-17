@@ -60,6 +60,17 @@ func (fu fakeUserDB) GetByEmail(ctx context.Context, email string) (*models.User
 	return nil, errors.New("no user found")
 }
 
+func (fu *fakeUserDB) Update(ctx context.Context, user *models.User) (*models.User, error) {
+	dbUser, err := fu.GetByID(ctx, user.ID)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch user for update: %s", err)
+	}
+
+	dbUser.Email = user.Email
+	dbUser.Password = user.Password
+	return dbUser, nil
+}
+
 func assertResponseCode(got int, want int, t *testing.T) {
 	if got != want {
 		t.Fatalf("got response code %d want %d", got, want)
@@ -121,6 +132,44 @@ func TestUsersAPIIntegration(t *testing.T) {
 }
 
 func TestUsersAPI(t *testing.T) {
+	t.Run("test user password update", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
+		testUser := models.User{
+			ID:       1,
+			Email:    "joel.st.saunders@gmail.com",
+			Password: auth.HashPassword("helloooooo"),
+		}
+		userStore := fakeUserDB{users: []*models.User{&testUser}}
+		server := api.UserRoutes(&userStore, configuration)
+
+		newUserPassword := api.PasswordChangePayload{Password: "Password"}
+		userPaswordJSON, _ := json.Marshal(newUserPassword)
+
+		// send the request to the handler
+		request, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/%d", testUser.ID), bytes.NewReader(userPaswordJSON))
+		response := httptest.NewRecorder()
+		request.Header.Set("Content-Type", "application/json")
+		test_utils.AddAuthHeader(request, testUser.ID, testUser.Email, configuration.JWTSecret)
+		server.ServeHTTP(response, request)
+		test_utils.AssertResponseCode(response.Code, http.StatusOK, t)
+
+		// check that right user returned
+		user, err := userStore.GetByID(context.Background(), testUser.ID)
+		if err != nil {
+			t.Errorf("could not retrieve updated user: %s", err)
+		}
+		expectedUserResponse, _ := json.Marshal(user)
+		test_utils.AssertEqualJSON(response.Body.String(), string(expectedUserResponse), t)
+		// the password should have been hashed and updated
+		id, err := auth.CheckCredentials(context.Background(), user.Email, newUserPassword.Password, &userStore)
+		if err != nil {
+			t.Fatalf("could not check password updated: %s", err)
+		}
+		if id != testUser.ID {
+			t.Fatalf("id of user does not match: %s", err)
+		}
+	})
+
 	t.Run("Test users list results", func(t *testing.T) {
 		configuration, _ := config.NewConfig()
 		testUser := models.User{

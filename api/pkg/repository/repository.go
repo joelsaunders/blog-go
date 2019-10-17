@@ -11,6 +11,7 @@ type UserStore interface {
 	Create(ctx context.Context, user *models.NewUser) (*models.User, error)
 	GetByID(ctx context.Context, id int) (*models.User, error)
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
+	Update(ctx context.Context, user *models.User) (*models.User, error)
 }
 
 type PostStore interface {

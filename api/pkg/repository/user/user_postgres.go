@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/joelsaunders/blog-go/api/pkg/models"
@@ -69,4 +70,14 @@ func (us *PGUserStore) Create(ctx context.Context, user *models.NewUser) (*model
 	}
 
 	return createdUser, nil
+}
+
+func (us *PGUserStore) Update(ctx context.Context, user *models.User) (*models.User, error) {
+	query := "UPDATE users SET email=$2, password=$3 WHERE id=$1 RETURNING id, email, password"
+	var u models.User
+	err := us.DB.QueryRowxContext(ctx, query, user.ID, user.Email, user.Password).StructScan(&u)
+	if err != nil {
+		return nil, fmt.Errorf("could not update user: %s", err)
+	}
+	return &u, nil
 }
