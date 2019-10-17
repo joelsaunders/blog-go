@@ -18,6 +18,33 @@ type lastInsertDetails struct {
 	Slug string `db:"slug"`
 }
 
+func (ps *PGPostStore) DeleteBySlug(ctx context.Context, postSlug string) error {
+	postTagsDeleteQuery := "DELETE FROM posttags pt WHERE pt.post_id = $1"
+	postDeleteQuery := "DELETE FROM posts WHERE posts.slug = $1"
+
+	post, err := ps.GetBySlug(ctx, postSlug)
+	if err != nil {
+		return fmt.Errorf("could not fetch post to delete: %s", err)
+	}
+
+	tx := ps.DB.MustBegin()
+	_, err = tx.ExecContext(ctx, postTagsDeleteQuery, post.ID)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error in delete db transaction: %s", err)
+	}
+	_, err = tx.ExecContext(ctx, postDeleteQuery, post.Slug)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error in delete db transaction: %s", err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("database error deleting post: %s", err)
+	}
+	return nil
+}
+
 func (ps *PGPostStore) Create(ctx context.Context, post *models.Post) (*models.Post, error) {
 	query := `INSERT INTO posts (
 		slug,

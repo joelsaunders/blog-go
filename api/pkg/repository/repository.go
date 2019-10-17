@@ -18,4 +18,5 @@ type PostStore interface {
 	GetBySlug(ctx context.Context, slug string) (*models.Post, error)
 	Create(ctx context.Context, post *models.Post) (*models.Post, error)
 	Update(ctx context.Context, post *models.Post) (*models.Post, error)
+	DeleteBySlug(ctx context.Context, postSlug string) error
 }

@@ -128,6 +128,50 @@ func TestPosts(t *testing.T) {
 	test_utils.SetUpTestDB("../../../migrations")
 	txdb.Register("txdb", "postgres", "host=localhost port=15432 user=root password=root dbname=test sslmode=disable")
 
+	t.Run("Test Delete Post", func(t *testing.T) {
+		db := test_utils.OpenTransaction(t)
+		defer db.Close()
+
+		userEmail := "joel"
+		userID := insertUser(userEmail, db, t)
+
+		testPost := models.Post{
+			Created:     time.Now().Round(time.Second).UTC(),
+			Modified:    time.Now().Round(time.Second).UTC(),
+			Slug:        "test slug",
+			Title:       "test title",
+			Body:        "test body",
+			Picture:     "test picture",
+			Description: "test description",
+			Published:   true,
+			AuthorID:    userID,
+			AuthorEmail: userEmail,
+			Tags:        []string{"test tag"},
+		}
+
+		insertedPostID := insertPost(&testPost, db, t)
+		addTag(insertedPostID, testPost.Tags[0], db, t)
+
+		postStore := post.PGPostStore{db}
+		ctx := context.Background()
+
+		err := postStore.DeleteBySlug(ctx, testPost.Slug)
+
+		if err != nil {
+			t.Fatalf("could not delete post: %s", err)
+		}
+
+		posts, err := postStore.List(ctx)
+
+		if err != nil {
+			t.Fatalf("could not list posts after delete: %s", err)
+		}
+
+		if len(posts) != 0 {
+			t.Fatalf("expected 0 posts but got %d", len(posts))
+		}
+	})
+
 	t.Run("Test List Posts", func(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
 		defer db.Close()

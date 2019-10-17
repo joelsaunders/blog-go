@@ -1,20 +1,12 @@
 import React, {useState} from 'react';
 import {connect} from "react-redux";
 import {Link} from "react-router-dom";
-import Modal from "../../Modal";
 import postDateFormatter from "../postDateFormatter";
-
-const renderDeleteModal = (setDeleteModalActive) => {
-    return <Modal onDismiss={() => {setDeleteModalActive(false)}}>
-        Are you sure you want to delete this post?
-        <button>Delete</button>
-        <button onClick={() => {setDeleteModalActive(false)}}>Cancel</button>
-    </Modal>;
-};
+import DeletePostModal from "../postDelete/postDelete";
 
 const renderPostButtons = (post, setDeleteModalActive) => {
     return <div className="absolute flex flex-row top-0 right-0 mt-2">
-        <Link className="mr-2" to={`/posts/edit/${post.slug}`} >
+        <Link className="mr-2" to={`/posts/edit/${post.slug}`}>
             <svg viewBox="0 0 24 24" width="24" height="24"
                  stroke="currentColor" strokeWidth="2" fill="none"
                  strokeLinecap="round" strokeLinejoin="round"
@@ -40,7 +32,8 @@ const renderPostButtons = (post, setDeleteModalActive) => {
 };
 
 const PostTag = ({tagName}) => {
-    return <div className="mr-2 rounded text-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-100 hover:bg-teal-500">
+    return <div
+        className="mr-2 rounded text-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-100 hover:bg-teal-500">
         {tagName}
     </div>
 };
@@ -49,7 +42,8 @@ const PostTag = ({tagName}) => {
 const PostItem = (props) => {
     const [deleteModalActive, setDeleteModalActive] = useState(false);
 
-    return <div className="w-full rounded overflow-hidden shadow-lg my-4 flex flex-col md:flex-row bg-white relative md:h-full md:justify-end">
+    return <div
+        className="w-full rounded overflow-hidden shadow-lg my-4 flex flex-col md:flex-row bg-white relative md:h-full md:justify-end">
         <Link className="md:w-1/3 md:absolute md:left-0 md:h-full" to={`/${props.post.slug}`}>
             <img className="object-cover w-full h-64 md:h-full" src={props.post.picture} alt="post"/>
         </Link>
@@ -64,15 +58,22 @@ const PostItem = (props) => {
             </p>
             <div className="flex flex-row mb-4 flex-wrap">
                 {props.post.tags.map((name) => {
-                    return <PostTag key={name} tagName={name} />
+                    return <PostTag key={name} tagName={name}/>
                 })}
             </div>
             <p className="text-gray-700 text-base">
                 {props.post.description}
             </p>
         </div>
-        {props.currentUser === props.post.author ? renderPostButtons(props.post, setDeleteModalActive): null}
-        {deleteModalActive? renderDeleteModal(setDeleteModalActive): null}
+        {props.currentUser === props.post.author ? renderPostButtons(props.post, setDeleteModalActive) : null}
+        {
+            deleteModalActive ?
+                <DeletePostModal
+                    postSlug={props.post.slug}
+                    setDeleteModalActive={(value) => setDeleteModalActive(value)}
+                /> :
+                null
+        }
     </div>
 };
 

@@ -69,7 +69,47 @@ func (fp *fakePostDB) Update(ctx context.Context, post *models.Post) (*models.Po
 	return dbPost, nil
 }
 
+func (fp *fakePostDB) DeleteBySlug(ctx context.Context, postSlug string) error {
+	newSlice := []*models.Post{}
+	for _, post := range fp.posts {
+		if post.Slug != postSlug {
+			newSlice = append(newSlice, post)
+		}
+	}
+	fp.posts = newSlice
+	return nil
+}
+
 func TestPostAPI(t *testing.T) {
+	t.Run("Test post delete", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
+		testPost := models.Post{
+			Created:     time.Now().Round(time.Second).UTC(),
+			Modified:    time.Now().Round(time.Second).UTC(),
+			Slug:        "test slug",
+			Title:       "test title",
+			Body:        "test body",
+			Picture:     "test picture",
+			Description: "test description",
+			Published:   true,
+			AuthorID:    1,
+			AuthorEmail: "joel",
+			Tags:        []string{"hello1"},
+		}
+
+		postStore := fakePostDB{[]*models.Post{&testPost}}
+		server := api.PostRoutes(&postStore, configuration)
+		request, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/%s", testPost.Slug), nil)
+		test_utils.AddAuthHeader(request, 1, "joel", configuration.JWTSecret)
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		test_utils.AssertResponseCode(response.Code, http.StatusNoContent, t)
+		if len(postStore.posts) != 0 {
+			t.Fatalf("post was not deleted")
+		}
+	})
+
 	t.Run("Test post list", func(t *testing.T) {
 		configuration, _ := config.NewConfig()
 		testPost := models.Post{

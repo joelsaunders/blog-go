@@ -4,6 +4,7 @@ import {saveState} from "../localStorage";
 export const FETCH_POSTS = 'FETCH_POSTS';
 export const EDIT_POST = 'EDIT_POST';
 export const CREATE_POST = 'CREATE_POST';
+export const DELETE_POST = 'DELETE_POST';
 export const SIGN_IN = 'SIGN_IN';
 export const SIGN_OUT = 'SIGN_OUT';
 
@@ -36,7 +37,6 @@ export const editPost = (postId, data) => async (dispatch, getState) => {
 export const createPost = (data) => async (dispatch, getState) => {
     const {token, user} = getState().auth;
 
-
     try {
         const response = await theBookOfJoel.post(
             `api/v1/posts`,
@@ -44,6 +44,23 @@ export const createPost = (data) => async (dispatch, getState) => {
             {headers: {Authorization: `Bearer ${token}`}}
         );
         dispatch({type: CREATE_POST, payload: response.data})
+    } catch (err) {
+        if (err.response.status === 401) {
+            dispatch(signOut())
+        }
+        console.log(err);
+    }
+};
+
+export const deletePost = (postSlug) => async (dispatch, getState) => {
+    const {token} = getState().auth;
+
+    try {
+        await theBookOfJoel.delete(
+            `/api/v1/posts/${postSlug}`,
+            {headers: {Authorization: `Bearer ${token}`}}
+        );
+        dispatch({type: DELETE_POST, payload: {slug: postSlug}})
     } catch (err) {
         if (err.response.status === 401) {
             dispatch(signOut())

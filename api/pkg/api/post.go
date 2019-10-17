@@ -22,6 +22,7 @@ func PostRoutes(postStore repository.PostStore, config *config.Config) *chi.Mux 
 		router.Use(jwtauth.Authenticator)
 
 		router.Patch("/{postSlug}", NewPostHandler(postStore).updatePost())
+		router.Delete("/{postSlug}", NewPostHandler(postStore).deletePost())
 		router.Post("/", NewPostHandler(postStore).createPost())
 	})
 	router.Get("/{postSlug}", NewPostHandler(postStore).retrievePost())
@@ -35,6 +36,19 @@ type PostHandler struct {
 
 func NewPostHandler(store repository.PostStore) *PostHandler {
 	return &PostHandler{store}
+}
+
+func (ph PostHandler) deletePost() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		postSlug := chi.URLParam(r, "postSlug")
+
+		err := ph.store.DeleteBySlug(r.Context(), postSlug)
+		if err != nil {
+			log.Println(err)
+			render.Render(w, r, ErrDatabase(err))
+		}
+		render.NoContent(w, r)
+	}
 }
 
 func (ph PostHandler) getPostList() http.HandlerFunc {

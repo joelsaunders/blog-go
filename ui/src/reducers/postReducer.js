@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {CREATE_POST, EDIT_POST, FETCH_POSTS} from "../actions";
+import {CREATE_POST, EDIT_POST, FETCH_POSTS, DELETE_POST} from "../actions";
 
 export default (state={}, action) => {
     switch (action.type) {
@@ -16,6 +16,9 @@ export default (state={}, action) => {
             return {...newState, [action.payload.responseData.slug]: action.payload.responseData};
         case CREATE_POST:
             return {...state, [action.payload.slug]: action.payload};
+        case DELETE_POST:
+            const {[action.payload.slug]: __, ...withoutSlug} = state;
+            return withoutSlug;
         default:
             return state
     }
