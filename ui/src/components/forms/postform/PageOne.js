@@ -3,11 +3,26 @@ import {ErrorMessage, Field} from "formik";
 import {Link} from "react-router-dom";
 
 const PageOne = (props) => {
+    const slugErr = props.formProps.errors.hasOwnProperty('slug');
     const titleErr = props.formProps.errors.hasOwnProperty('title');
     const descriptionErr = props.formProps.errors.hasOwnProperty('description');
     const pictureErr = props.formProps.errors.hasOwnProperty('picture');
 
     return <>
+        <div className="my-8">
+            <label className="block text-gray-700 text-base font-bold mb-2" htmlFor="slug">
+                Slug
+            </label>
+            <Field type="text"
+                   name="slug"
+                   placeholder="Slug"
+                   className="shadow appearance-none border rounded w-full sm:w-1/2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+        </div>
+        <div className={`ui error message ${slugErr ? 'visible': null}`}>
+            <ErrorMessage className="ui error message visible" name="slug" />
+        </div>
+
         <div className="my-8">
             <label className="block text-gray-700 text-base font-bold mb-2" htmlFor="title">
                 Title

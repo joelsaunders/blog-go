@@ -1,7 +1,7 @@
 import React from 'react';
 import {editPost} from "../../../actions";
 import {connect} from "react-redux";
-import FormikPostForm from "../../forms/PostForm";
+import FormikPostForm from "../../forms/postform/PostForm";
 import useCurrentPost from "../../../hooks/useCurrentPost";
 import PostEditComponent from "./PostEditComponent";
 

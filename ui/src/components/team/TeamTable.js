@@ -46,6 +46,7 @@ const TeamCard = ({image, name, position}) => {
         <div className="w-56 mx-auto rounded bg-white shadow-lg pb-2">
             <img src={image}
                  className="rounded-t h-56 w-full object-cover"
+                 alt={`${name}-${position}`}
             />
             <div className="m-2">
                 <p className="text-center text-base text-gray-900 font-bold">

@@ -24,7 +24,7 @@ export const editPost = (postId, data) => async (dispatch, getState) => {
             data,
             {headers: {Authorization: `Bearer ${token}`}}
         );
-        dispatch({type: EDIT_POST, payload: response.data})
+        dispatch({type: EDIT_POST, payload: {responseData: response.data, originalSlug: postId}})
     } catch (err) {
         if (err.response.status === 401) {
             dispatch(signOut())

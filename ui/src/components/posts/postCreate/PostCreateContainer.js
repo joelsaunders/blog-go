@@ -1,5 +1,5 @@
 import React from 'react';
-import FormikPostForm from "../../forms/PostForm";
+import FormikPostForm from "../../forms/postform/PostForm";
 import {createPost} from "../../../actions";
 import {connect} from "react-redux";
 import PostCreateComponent from "./PostCreateComponent";
