@@ -13,6 +13,7 @@ import (
 	"github.com/joelsaunders/blog-go/api/pkg/repository"
 )
 
+// PostRoutes returns a router mux that containes routes for modifying/retrieving post objects
 func PostRoutes(postStore repository.PostStore, config *config.Config) *chi.Mux {
 	router := chi.NewRouter()
 	tokenAuth := jwtauth.New("HS256", config.JWTSecret, nil)
@@ -21,24 +22,24 @@ func PostRoutes(postStore repository.PostStore, config *config.Config) *chi.Mux 
 		router.Use(jwtauth.Verifier(tokenAuth))
 		router.Use(jwtauth.Authenticator)
 
-		router.Patch("/{postSlug}", NewPostHandler(postStore).updatePost())
-		router.Delete("/{postSlug}", NewPostHandler(postStore).deletePost())
-		router.Post("/", NewPostHandler(postStore).createPost())
+		router.Patch("/{postSlug}", newPostHandler(postStore).updatePost())
+		router.Delete("/{postSlug}", newPostHandler(postStore).deletePost())
+		router.Post("/", newPostHandler(postStore).createPost())
 	})
-	router.Get("/{postSlug}", NewPostHandler(postStore).retrievePost())
-	router.Get("/", NewPostHandler(postStore).getPostList())
+	router.Get("/{postSlug}", newPostHandler(postStore).retrievePost())
+	router.Get("/", newPostHandler(postStore).getPostList())
 	return router
 }
 
-type PostHandler struct {
+type postHandler struct {
 	store repository.PostStore
 }
 
-func NewPostHandler(store repository.PostStore) *PostHandler {
-	return &PostHandler{store}
+func newPostHandler(store repository.PostStore) *postHandler {
+	return &postHandler{store}
 }
 
-func (ph PostHandler) deletePost() http.HandlerFunc {
+func (ph postHandler) deletePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postSlug := chi.URLParam(r, "postSlug")
 
@@ -51,7 +52,7 @@ func (ph PostHandler) deletePost() http.HandlerFunc {
 	}
 }
 
-func (ph PostHandler) getPostList() http.HandlerFunc {
+func (ph postHandler) getPostList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		posts, err := ph.store.List(r.Context())
 		if err != nil {
@@ -62,7 +63,7 @@ func (ph PostHandler) getPostList() http.HandlerFunc {
 	}
 }
 
-func (ph PostHandler) retrievePost() http.HandlerFunc {
+func (ph postHandler) retrievePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postSlug := chi.URLParam(r, "postSlug")
 
@@ -75,7 +76,7 @@ func (ph PostHandler) retrievePost() http.HandlerFunc {
 	}
 }
 
-func (ph PostHandler) createPost() http.HandlerFunc {
+func (ph postHandler) createPost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newPost := postPayload{}
 
@@ -84,7 +85,7 @@ func (ph PostHandler) createPost() http.HandlerFunc {
 			return
 		}
 
-		// set the author id automatically forl creation of posts
+		// set the author id automatically for creation of posts
 		_, claims, _ := jwtauth.FromContext(r.Context())
 		userID := int(claims["id"].(float64))
 		newPost.Post.AuthorID = userID
@@ -101,7 +102,7 @@ func (ph PostHandler) createPost() http.HandlerFunc {
 	}
 }
 
-func (ph PostHandler) updatePost() http.HandlerFunc {
+func (ph postHandler) updatePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		postSlug := chi.URLParam(r, "postSlug")

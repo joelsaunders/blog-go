@@ -14,6 +14,7 @@ import (
 	"github.com/joelsaunders/blog-go/api/pkg/repository/user"
 )
 
+// Routes is the base router mux for the server, it contains all routes available
 func Routes(config *config.Config, db *sqlx.DB) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(render.SetContentType(render.ContentTypeJSON))

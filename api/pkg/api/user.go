@@ -14,6 +14,7 @@ import (
 	"github.com/joelsaunders/blog-go/api/pkg/repository"
 )
 
+// UserRoutes is the router mux that conains routes for updating/modifying users and logging in
 func UserRoutes(userStore repository.UserStore, config *config.Config) *chi.Mux {
 	router := chi.NewRouter()
 	tokenAuth := jwtauth.New("HS256", config.JWTSecret, nil)
@@ -22,25 +23,25 @@ func UserRoutes(userStore repository.UserStore, config *config.Config) *chi.Mux 
 		router.Use(jwtauth.Verifier(tokenAuth))
 		router.Use(jwtauth.Authenticator)
 
-		router.Get("/{userID}", NewUserHandler(userStore).retrieveUser())
-		router.Patch("/{userID}", NewUserHandler(userStore).updateUserPassword())
-		router.Get("/", NewUserHandler(userStore).getUserList())
-		router.Post("/", NewUserHandler(userStore).createUser())
+		router.Get("/{userID}", newUserHandler(userStore).retrieveUser())
+		router.Patch("/{userID}", newUserHandler(userStore).updateUserPassword())
+		router.Get("/", newUserHandler(userStore).getUserList())
+		router.Post("/", newUserHandler(userStore).createUser())
 	})
 
-	router.Post("/login", NewUserHandler(userStore).loginUser(config.JWTSecret))
+	router.Post("/login", newUserHandler(userStore).loginUser(config.JWTSecret))
 	return router
 }
 
-type UserHandler struct {
+type userHandler struct {
 	store repository.UserStore
 }
 
-func NewUserHandler(userStore repository.UserStore) *UserHandler {
-	return &UserHandler{userStore}
+func newUserHandler(userStore repository.UserStore) *userHandler {
+	return &userHandler{userStore}
 }
 
-func (uh UserHandler) loginUser(jwtKey []byte) http.HandlerFunc {
+func (uh userHandler) loginUser(jwtKey []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		credentials := userCredentialsPayload{}
 
@@ -69,7 +70,7 @@ func (uh UserHandler) loginUser(jwtKey []byte) http.HandlerFunc {
 	}
 }
 
-func (uh UserHandler) retrieveUser() http.HandlerFunc {
+func (uh userHandler) retrieveUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
 		if err != nil {
@@ -84,7 +85,7 @@ func (uh UserHandler) retrieveUser() http.HandlerFunc {
 	}
 }
 
-func (uh UserHandler) getUserList() http.HandlerFunc {
+func (uh userHandler) getUserList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := uh.store.List(r.Context(), 10)
 		if err != nil {
@@ -94,7 +95,7 @@ func (uh UserHandler) getUserList() http.HandlerFunc {
 	}
 }
 
-func (uh UserHandler) updateUserPassword() http.HandlerFunc {
+func (uh userHandler) updateUserPassword() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
 		ctx := r.Context()
@@ -126,7 +127,7 @@ func (uh UserHandler) updateUserPassword() http.HandlerFunc {
 	}
 }
 
-func (uh UserHandler) createUser() http.HandlerFunc {
+func (uh userHandler) createUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newUser := newUserPayload{}
 		if err := render.Bind(r, &newUser); err != nil {
