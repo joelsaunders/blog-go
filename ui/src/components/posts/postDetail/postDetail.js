@@ -1,6 +1,7 @@
 import React from 'react';
 import MarkdownRenderer from "../../MarkdownRenderer/MardownRenderer";
 import {Helmet} from "react-helmet";
+import postDateFormatter from "../postDateFormatter";
 
 const PostDetail = ({currentPost}) => {
     if (!currentPost) {
@@ -19,7 +20,7 @@ const PostDetail = ({currentPost}) => {
                 {currentPost.title}
             </h3>
             <p className="text-sm text-gray-600 mb-2">
-                {currentPost.created}
+                {postDateFormatter(currentPost.created)}
             </p>
             <MarkdownRenderer text={currentPost.body} />
         </div>

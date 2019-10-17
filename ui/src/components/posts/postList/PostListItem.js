@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {connect} from "react-redux";
 import {Link} from "react-router-dom";
 import Modal from "../../Modal";
+import postDateFormatter from "../postDateFormatter";
 
 const renderDeleteModal = (setDeleteModalActive) => {
     return <Modal onDismiss={() => {setDeleteModalActive(false)}}>
@@ -59,7 +60,7 @@ const PostItem = (props) => {
                 </Link>
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-                <span>{props.post.created}</span>
+                <span>{postDateFormatter(props.post.created)}</span>
             </p>
             <div className="flex flex-row mb-4 flex-wrap">
                 {props.post.tags.map((name) => {
@@ -69,17 +70,6 @@ const PostItem = (props) => {
             <p className="text-gray-700 text-base">
                 {props.post.description}
             </p>
-
-            {/*<Link to={`/${props.post.slug}`}>*/}
-            {/*    <svg viewBox="0 0 24 24" width="24" height="24"*/}
-            {/*         stroke="currentColor" strokeWidth="2" fill="none"*/}
-            {/*         strokeLinecap="round" strokeLinejoin="round"*/}
-            {/*         className="absolute right-0 bottom-0 mb-6 mr-8 hover:text-teal-500 hidden md:block"*/}
-            {/*    >*/}
-            {/*        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>*/}
-            {/*        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>*/}
-            {/*    </svg>*/}
-            {/*</Link>*/}
         </div>
         {props.currentUser === props.post.author ? renderPostButtons(props.post, setDeleteModalActive): null}
         {deleteModalActive? renderDeleteModal(setDeleteModalActive): null}
