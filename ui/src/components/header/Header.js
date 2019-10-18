@@ -4,11 +4,19 @@ import LoginForm from "../forms/LoginForm";
 import {Link} from "react-router-dom";
 import {LogInButton} from "./LogInButton";
 import HeaderMenu from "./HeaderMenu";
+import {ChangePasswordButton} from "./ChangePasswordButton";
+import ChangePasswordForm from "../forms/ChangePasswordForm";
 
 
 const renderLoginModal = (onDismissLogIn) => {
     return <Modal onDismiss={onDismissLogIn}>
         <LoginForm onDismiss={onDismissLogIn} />
+    </Modal>
+};
+
+const renderPasswordChange = (toggleOpen) => {
+    return <Modal onDismiss={toggleOpen}>
+        <ChangePasswordForm onDismiss={toggleOpen} />
     </Modal>
 };
 
@@ -47,13 +55,21 @@ const Header = (props) => {
             <HeaderMenu currentPath={props.currentPath} />
         </div>
         <div className={menuOpen? '': 'hidden md:block'}>
-            <LogInButton
-                loggedIn={props.loggedIn}
-                handleLogInClick={props.handleLogInClick}
-                handleLogOutClick={props.handleLogOutClick}
-            />
+            {
+                props.loggedIn?
+                    <ChangePasswordButton handleToggleOpen={props.handleChangePasswordClick} />:
+                    null
+            }
+            <div className="ml-2 inline-block">
+                <LogInButton
+                    loggedIn={props.loggedIn}
+                    handleLogInClick={props.handleLogInClick}
+                    handleLogOutClick={props.handleLogOutClick}
+                />
+            </div>
         </div>
         {props.renderLogInModal? renderLoginModal(props.onDismissLogIn) : null}
+        {props.passwordChangeOpen? renderPasswordChange(props.handleChangePasswordClick): null}
     </nav>;
 };
 

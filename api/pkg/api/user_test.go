@@ -146,7 +146,7 @@ func TestUsersAPI(t *testing.T) {
 		userPaswordJSON, _ := json.Marshal(newUserPassword)
 
 		// send the request to the handler
-		request, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/%d", testUser.ID), bytes.NewReader(userPaswordJSON))
+		request, _ := http.NewRequest(http.MethodPatch, "/change-password", bytes.NewReader(userPaswordJSON))
 		response := httptest.NewRecorder()
 		request.Header.Set("Content-Type", "application/json")
 		test_utils.AddAuthHeader(request, testUser.ID, testUser.Email, configuration.JWTSecret)

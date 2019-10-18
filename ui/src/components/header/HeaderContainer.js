@@ -7,6 +7,7 @@ import Header from "./Header";
 const HeaderContainer = (props) => {
     const[logInOpen, setLoginOpen] = useState(false);
     const[menuOpen, setMenuOpen] = useState(false);
+    const[passwordChangeOpen, setPasswordChangeOpen] = useState(false);
 
     const onMenuClick = () => {
         setMenuOpen(!menuOpen);
@@ -24,6 +25,10 @@ const HeaderContainer = (props) => {
         setLoginOpen(false);
     };
 
+    const onChangePasswordClick = () => {
+        setPasswordChangeOpen(!passwordChangeOpen);
+    };
+
     return <Header
             renderLogInModal={logInOpen}
             handleLogInClick={onLogInClick}
@@ -33,6 +38,8 @@ const HeaderContainer = (props) => {
             onMenuClick={onMenuClick}
             menuOpen={menuOpen}
             currentPath={props.location.pathname}
+            handleChangePasswordClick={onChangePasswordClick}
+            passwordChangeOpen={passwordChangeOpen}
     />
 };
 

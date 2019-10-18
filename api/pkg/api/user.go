@@ -24,7 +24,7 @@ func UserRoutes(userStore repository.UserStore, config *config.Config) *chi.Mux 
 		router.Use(jwtauth.Authenticator)
 
 		router.Get("/{userID}", newUserHandler(userStore).retrieveUser())
-		router.Patch("/{userID}", newUserHandler(userStore).updateUserPassword())
+		router.Patch("/change-password", newUserHandler(userStore).updateUserPassword())
 		router.Get("/", newUserHandler(userStore).getUserList())
 		router.Post("/", newUserHandler(userStore).createUser())
 	})
@@ -97,11 +97,9 @@ func (uh userHandler) getUserList() http.HandlerFunc {
 
 func (uh userHandler) updateUserPassword() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
 		ctx := r.Context()
-		if err != nil {
-			render.Render(w, r, ErrInvalidRequest(err))
-		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		userID := int(claims["id"].(float64))
 
 		user, err := uh.store.GetByID(ctx, userID)
 		if err != nil {
