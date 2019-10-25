@@ -5,8 +5,8 @@ set -e
 export COMMIT=`git rev-parse HEAD`
 export BASE_TAG="joelsaunders91"
 
-export FRONTEND_TAG=$BASE_TAG/gothebookofjoel-frontend:$COMMIT
 export BACKEND_TAG=$BASE_TAG/gothebookofjoel-backend:$COMMIT
+export MIGRATE_TAG=$BASE_TAG/gothebookofjoel-migrate:$COMMIT
 export NGINX_TAG=$BASE_TAG/gothebookofjoel-nginx:$COMMIT
 
 echo "building frontend"
@@ -18,10 +18,6 @@ echo "frontend build finished"
 
 echo "building backend image"
 docker build -t $BACKEND_TAG -q ./api
-# export id=$(docker run -d $BACKEND_TAG)
-# mkdir -p nginx/www/static
-# docker cp $id:/code/main/static/ nginx/www/
-# docker stop $id
 echo "finished building backend image"
 echo "$BACKEND_TAG"
 
@@ -30,12 +26,20 @@ docker build -t $NGINX_TAG -q ./nginx
 echo "finished building nginx image"
 echo "$NGINX_TAG"
 
+echo "building migrations image"
+docker build -t $MIGRATE_TAG -q ./api/migrations
+echo "finished building migrations image"
+echo "$MIGRATE_TAG"
+
 if [ "$1" == "deploy" ]; then
     echo "Pushing images to registry"
     docker push $BACKEND_TAG
     docker push $NGINX_TAG
+    docker push $MIGRATE_TAG
+
     echo "adding tags to kubectl"
     sed -i "s#image: backend#image: ${BACKEND_TAG}#" ./k8s/deployment.yaml
     sed -i "s#image: nginx#image: ${NGINX_TAG}#" ./k8s/deployment.yaml
+    sed -i "s#image: migrate-image#image: ${MIGRATE_TAG}#" ./k8s/deployment.yaml
 #    kubectl apply -Rf ./k8s
 fi
