@@ -196,7 +196,6 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 
 	for rows.Next() {
 		var p models.Post
-		p.Tags = make([]string, 0)
 		err = rows.StructScan(&p)
 		if err != nil {
 			return nil, err
@@ -239,8 +238,7 @@ func (ps *PGPostStore) GetBySlug(ctx context.Context, slug string) (*models.Post
 		author_email
 	);`
 	post := models.Post{}
-	post.Tags = make([]string, 0)
-	err := ps.DB.Get(&post, query, slug)
+	err := ps.DB.GetContext(ctx, &post, query, slug)
 	if err != nil {
 		return nil, err
 	}
