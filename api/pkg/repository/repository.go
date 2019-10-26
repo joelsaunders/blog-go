@@ -21,3 +21,10 @@ type PostStore interface {
 	Update(ctx context.Context, post *models.Post) (*models.Post, error)
 	DeleteBySlug(ctx context.Context, postSlug string) error
 }
+
+type TagStore interface {
+	List(ctx context.Context) (*models.Tag, error)
+	Create(ctx context.Context, post *models.Tag) (*models.Tag, error)
+	Update(ctx context.Context, post *models.Tag) (*models.Tag, error)
+	DeleteByID(ctx context.Context, ID int) error
+}

@@ -3,9 +3,11 @@ package post
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+
 	"github.com/joelsaunders/blog-go/api/pkg/models"
 )
 
@@ -30,13 +32,13 @@ func (ps *PGPostStore) DeleteBySlug(ctx context.Context, postSlug string) error 
 	tx := ps.DB.MustBegin()
 	_, err = tx.ExecContext(ctx, postTagsDeleteQuery, post.ID)
 	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf("error in delete db transaction: %s", err)
+		rErr := tx.Rollback()
+		log.Fatalf("error in delete db transaction: %s \n rollback state: %s", err, rErr)
 	}
 	_, err = tx.ExecContext(ctx, postDeleteQuery, post.Slug)
 	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf("error in delete db transaction: %s", err)
+		rErr := tx.Rollback()
+		log.Fatalf("error in delete db transaction: %s \n rollback state: %s", err, rErr)
 	}
 	err = tx.Commit()
 	if err != nil {

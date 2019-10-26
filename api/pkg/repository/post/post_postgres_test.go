@@ -17,61 +17,6 @@ import (
 	"github.com/joelsaunders/blog-go/api/test_utils"
 )
 
-func insertUser(email string, db *sqlx.DB, t *testing.T) (userID int) {
-	err := db.QueryRowx(
-		"insert into users (email, password) values ($1, 'mpassword') RETURNING id;",
-		email,
-	).Scan(&userID)
-	if err != nil {
-		t.Fatalf("could not insert user: %s", err)
-	}
-	return
-}
-
-func createTag(tagName string, db *sqlx.DB, t *testing.T) int {
-	var tagID int
-
-	err := db.QueryRowx(
-		fmt.Sprintf(
-			`insert into tags (
-				name
-			) values (
-				'%s'
-			) returning id;`,
-			tagName,
-		),
-	).Scan(&tagID)
-
-	if err != nil {
-		t.Errorf("could not add tag %s because of %s", tagName, err)
-	}
-
-	return tagID
-}
-
-func addTag(postID int, tagName string, db *sqlx.DB, t *testing.T) {
-	tagID := createTag(tagName, db, t)
-
-	var relationID int
-	err := db.QueryRowx(
-		fmt.Sprintf(
-			`insert into posttags (
-				tag_id,
-				post_id
-			) values (
-				%d,
-				%d 
-			) returning id;`,
-			tagID,
-			postID,
-		),
-	).Scan(&relationID)
-
-	if err != nil {
-		t.Errorf("could not relate post %d to tag %d because of %s", postID, tagID, err)
-	}
-}
-
 func insertPost(post *models.Post, db *sqlx.DB, t *testing.T) (postID int) {
 	err := db.QueryRowx(
 		fmt.Sprintf(
@@ -133,7 +78,7 @@ func TestPosts(t *testing.T) {
 		defer db.Close()
 
 		userEmail := "joel"
-		userID := insertUser(userEmail, db, t)
+		userID := test_utils.InsertUser(userEmail, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -150,7 +95,7 @@ func TestPosts(t *testing.T) {
 		}
 
 		insertedPostID := insertPost(&testPost, db, t)
-		addTag(insertedPostID, testPost.Tags[0], db, t)
+		test_utils.AddTag(insertedPostID, testPost.Tags[0], db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()
@@ -177,7 +122,7 @@ func TestPosts(t *testing.T) {
 		defer db.Close()
 
 		userEmail := "joel"
-		userID := insertUser(userEmail, db, t)
+		userID := test_utils.InsertUser(userEmail, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -194,7 +139,7 @@ func TestPosts(t *testing.T) {
 		}
 
 		insertedPostID := insertPost(&testPost, db, t)
-		addTag(insertedPostID, testPost.Tags[0], db, t)
+		test_utils.AddTag(insertedPostID, testPost.Tags[0], db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()
@@ -218,7 +163,7 @@ func TestPosts(t *testing.T) {
 		defer db.Close()
 
 		userEmail := "joel"
-		userID := insertUser(userEmail, db, t)
+		userID := test_utils.InsertUser(userEmail, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -235,8 +180,8 @@ func TestPosts(t *testing.T) {
 		}
 
 		insertedPostID := insertPost(&testPost, db, t)
-		addTag(insertedPostID, testPost.Tags[0], db, t)
-		addTag(insertedPostID, testPost.Tags[1], db, t)
+		test_utils.AddTag(insertedPostID, testPost.Tags[0], db, t)
+		test_utils.AddTag(insertedPostID, testPost.Tags[1], db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()
@@ -259,7 +204,7 @@ func TestPosts(t *testing.T) {
 		defer db.Close()
 
 		userEmail := "joel"
-		userID := insertUser(userEmail, db, t)
+		userID := test_utils.InsertUser(userEmail, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -275,8 +220,8 @@ func TestPosts(t *testing.T) {
 			Tags:        []string{"hello", "tag 2"},
 		}
 		// create the tags that this post needs in order to be createable
-		createTag("hello", db, t)
-		createTag("tag 2", db, t)
+		test_utils.CreateTag("hello", db, t)
+		test_utils.CreateTag("tag 2", db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()
@@ -298,9 +243,9 @@ func TestPosts(t *testing.T) {
 		defer db.Close()
 
 		userEmail := "joel"
-		userID := insertUser(userEmail, db, t)
+		userID := test_utils.InsertUser(userEmail, db, t)
 		user2Email := "jo"
-		user2ID := insertUser(user2Email, db, t)
+		user2ID := test_utils.InsertUser(user2Email, db, t)
 
 		testPost := models.Post{
 			Created:     time.Now().Round(time.Second).UTC(),
@@ -317,7 +262,7 @@ func TestPosts(t *testing.T) {
 		}
 
 		postID := insertPost(&testPost, db, t)
-		addTag(postID, testPost.Tags[0], db, t)
+		test_utils.AddTag(postID, testPost.Tags[0], db, t)
 
 		postStore := post.PGPostStore{db}
 		ctx := context.Background()
@@ -335,7 +280,7 @@ func TestPosts(t *testing.T) {
 		testPost.AuthorEmail = user2Email
 
 		// ensure the new tag exists
-		createTag(testPost.Tags[0], db, t)
+		test_utils.CreateTag(testPost.Tags[0], db, t)
 
 		updatedPost, err := postStore.Update(ctx, &testPost)
 		if err != nil {
