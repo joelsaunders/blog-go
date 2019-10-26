@@ -23,8 +23,8 @@ type PostStore interface {
 }
 
 type TagStore interface {
-	List(ctx context.Context) (*models.Tag, error)
-	Create(ctx context.Context, post *models.Tag) (*models.Tag, error)
-	Update(ctx context.Context, post *models.Tag) (*models.Tag, error)
+	List(ctx context.Context) ([]*models.Tag, error)
+	Create(ctx context.Context, tag *models.Tag) (*models.Tag, error)
+	Update(ctx context.Context, tag *models.Tag) (*models.Tag, error)
 	DeleteByID(ctx context.Context, ID int) error
 }

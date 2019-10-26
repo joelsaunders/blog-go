@@ -1,10 +1,23 @@
 package api
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/render"
 )
+
+type errorRenderer func(error) render.Renderer
+
+func HandleApiErr(err error, renderer errorRenderer, w http.ResponseWriter, r *http.Request) {
+	if err != nil {
+		log.Println(err)
+		err = render.Render(w, r, renderer(err))
+		if err != nil {
+			log.Fatalf("render of error response failed: %s", err)
+		}
+	}
+}
 
 type ErrResponse struct {
 	Err            error `json:"-"` // low-level runtime error

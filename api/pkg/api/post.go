@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -42,12 +41,8 @@ func newPostHandler(store repository.PostStore) *postHandler {
 func (ph postHandler) deletePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postSlug := chi.URLParam(r, "postSlug")
-
 		err := ph.store.DeleteBySlug(r.Context(), postSlug)
-		if err != nil {
-			log.Println(err)
-			render.Render(w, r, ErrDatabase(err))
-		}
+		HandleApiErr(err, ErrDatabase, w, r)
 		render.NoContent(w, r)
 	}
 }
@@ -55,10 +50,7 @@ func (ph postHandler) deletePost() http.HandlerFunc {
 func (ph postHandler) getPostList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		posts, err := ph.store.List(r.Context())
-		if err != nil {
-			log.Println(err)
-			render.Render(w, r, ErrDatabase(err))
-		}
+		HandleApiErr(err, ErrDatabase, w, r)
 		render.JSON(w, r, posts)
 	}
 }
@@ -66,12 +58,8 @@ func (ph postHandler) getPostList() http.HandlerFunc {
 func (ph postHandler) retrievePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postSlug := chi.URLParam(r, "postSlug")
-
 		post, err := ph.store.GetBySlug(r.Context(), postSlug)
-		if err != nil {
-			render.Render(w, r, ErrNotFound(err))
-		}
-
+		HandleApiErr(err, ErrNotFound, w, r)
 		render.JSON(w, r, post)
 	}
 }
@@ -80,8 +68,9 @@ func (ph postHandler) createPost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newPost := postPayload{}
 
-		if err := render.Bind(r, &newPost); err != nil {
-			render.Render(w, r, ErrInvalidRequest(err))
+		err := render.Bind(r, &newPost)
+		if err != nil {
+			HandleApiErr(err, ErrInvalidRequest, w, r)
 			return
 		}
 
@@ -91,9 +80,8 @@ func (ph postHandler) createPost() http.HandlerFunc {
 		newPost.Post.AuthorID = userID
 
 		post, err := ph.store.Create(r.Context(), newPost.Post)
-
 		if err != nil {
-			render.Render(w, r, ErrDatabase(err))
+			HandleApiErr(err, ErrDatabase, w, r)
 			return
 		}
 
@@ -109,19 +97,20 @@ func (ph postHandler) updatePost() http.HandlerFunc {
 
 		post, err := ph.store.GetBySlug(ctx, postSlug)
 		if err != nil {
-			render.Render(w, r, ErrNotFound(err))
+			HandleApiErr(err, ErrInvalidRequest, w, r)
+			return
 		}
 
 		modifiedPost := postPayload{Post: post}
 
 		if err := render.Bind(r, &modifiedPost); err != nil {
-			render.Render(w, r, ErrInvalidRequest(err))
+			HandleApiErr(err, ErrInvalidRequest, w, r)
 			return
 		}
 
 		post, err = ph.store.Update(ctx, modifiedPost.Post)
 		if err != nil {
-			render.Render(w, r, ErrDatabase(err))
+			HandleApiErr(err, ErrDatabase, w, r)
 			return
 		}
 
@@ -134,6 +123,6 @@ type postPayload struct {
 	*models.Post
 }
 
-func (pp *postPayload) Bind(r *http.Request) error {
+func (pp *postPayload) Bind(_ *http.Request) error {
 	return nil
 }

@@ -21,11 +21,11 @@ type fakePostDB struct {
 	posts []*models.Post
 }
 
-func (fp fakePostDB) List(ctx context.Context) ([]*models.Post, error) {
+func (fp fakePostDB) List(_ context.Context) ([]*models.Post, error) {
 	return fp.posts, nil
 }
 
-func (fp fakePostDB) GetByID(ctx context.Context, id int) (*models.Post, error) {
+func (fp fakePostDB) GetByID(_ context.Context, id int) (*models.Post, error) {
 	for _, post := range fp.posts {
 		if post.ID == id {
 			return post, nil
@@ -34,7 +34,7 @@ func (fp fakePostDB) GetByID(ctx context.Context, id int) (*models.Post, error) 
 	return nil, errors.New("post not found")
 }
 
-func (fp fakePostDB) GetBySlug(ctx context.Context, slug string) (*models.Post, error) {
+func (fp fakePostDB) GetBySlug(_ context.Context, slug string) (*models.Post, error) {
 	for _, post := range fp.posts {
 		if post.Slug == slug {
 			return post, nil
@@ -43,7 +43,7 @@ func (fp fakePostDB) GetBySlug(ctx context.Context, slug string) (*models.Post, 
 	return nil, errors.New("post not found")
 }
 
-func (fp *fakePostDB) Create(ctx context.Context, post *models.Post) (*models.Post, error) {
+func (fp *fakePostDB) Create(_ context.Context, post *models.Post) (*models.Post, error) {
 	post.Created = time.Now().UTC()
 	post.Modified = time.Now().UTC()
 	post.ID = len(fp.posts) + 1
@@ -69,8 +69,8 @@ func (fp *fakePostDB) Update(ctx context.Context, post *models.Post) (*models.Po
 	return dbPost, nil
 }
 
-func (fp *fakePostDB) DeleteBySlug(ctx context.Context, postSlug string) error {
-	newSlice := []*models.Post{}
+func (fp *fakePostDB) DeleteBySlug(_ context.Context, postSlug string) error {
+	var newSlice = make([]*models.Post, 0)
 	for _, post := range fp.posts {
 		if post.Slug != postSlug {
 			newSlice = append(newSlice, post)
@@ -191,7 +191,7 @@ func TestPostAPI(t *testing.T) {
 		// get created post from db
 		createdPost, err := postStore.GetBySlug(context.Background(), newPost.Slug)
 		if err != nil {
-			t.Errorf("created post cannot be found by slug")
+			t.Fatalf("created post cannot be found by slug")
 		}
 
 		// set auto fields
@@ -243,7 +243,7 @@ func TestPostAPI(t *testing.T) {
 		// get modified post from db
 		modifiedPostDB, err := postStore.GetByID(context.Background(), existingPost.ID)
 		if err != nil {
-			t.Errorf("created post cannot be found by id")
+			t.Fatalf("created post cannot be found by id")
 		}
 
 		// set auto fields
