@@ -1,12 +1,22 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Form, withFormik} from "formik";
 import * as Yup from 'yup';
 import {Redirect, Route, Switch} from "react-router-dom";
 import PageOne from "./PageOne";
 import PageTwo from "./PageTwo";
 import customHistory from "../../../customHistory";
+import {connect} from "react-redux";
+import {fetchTags} from "../../../actions";
 
 const PostForm = (props) => {
+    const fetchTags = props.fetchTags;
+    useEffect(
+        () => {
+            (async () =>  await fetchTags())()
+        },
+        [fetchTags]
+    );
+
     return <div>
         <Form>
             <Switch>
@@ -43,7 +53,8 @@ const FormikPostForm = withFormik({
             slug: props.post? props.post.slug || '': '',
             description: props.post? props.post.description || '': '',
             body: props.post? props.post.body || '': '',
-            picture: props.post? props.post.picture || '': ''
+            picture: props.post? props.post.picture || '': '',
+            tags: props.post? props.post.tags || []: [],
         }
     },
     validationSchema: Yup.object().shape({
@@ -58,4 +69,8 @@ const FormikPostForm = withFormik({
     }
 });
 
-export default FormikPostForm(PostForm);
+const mapStateToProps = (state) => {
+    return {tags: state.tags}
+};
+
+export default connect(mapStateToProps, {fetchTags})(FormikPostForm(PostForm));

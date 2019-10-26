@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import {ErrorMessage, Field} from "formik";
 import {Link} from "react-router-dom";
@@ -19,8 +20,8 @@ const PageOne = (props) => {
                    className="shadow appearance-none border rounded w-full sm:w-1/2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
         </div>
-        <div className={`ui error message ${slugErr ? 'visible': null}`}>
-            <ErrorMessage className="ui error message visible" name="slug" />
+        <div className={`ui error message ${slugErr ? 'visible' : null}`}>
+            <ErrorMessage className="ui error message visible" name="slug"/>
         </div>
 
         <div className="my-8">
@@ -33,8 +34,8 @@ const PageOne = (props) => {
                    className="shadow appearance-none border rounded w-full sm:w-1/2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
         </div>
-        <div className={`ui error message ${titleErr ? 'visible': null}`}>
-            <ErrorMessage className="ui error message visible" name="title" />
+        <div className={`ui error message ${titleErr ? 'visible' : null}`}>
+            <ErrorMessage className="ui error message visible" name="title"/>
         </div>
 
         <div className="my-4">
@@ -48,8 +49,8 @@ const PageOne = (props) => {
                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
         </div>
-        <div className={`ui error message ${descriptionErr ? 'visible': null}`}>
-            <ErrorMessage className="ui error message visible" name="description" />
+        <div className={`ui error message ${descriptionErr ? 'visible' : null}`}>
+            <ErrorMessage className="ui error message visible" name="description"/>
         </div>
 
         <div className="my-4">
@@ -62,12 +63,40 @@ const PageOne = (props) => {
                    className="shadow appearance-none border rounded w-full sm:w-1/2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
         </div>
-        <div className={`ui error message ${pictureErr ? 'visible': null}`}>
-            <ErrorMessage className="ui error message visible" name="picture" />
+        <div className={`ui error message ${pictureErr ? 'visible' : null}`}>
+            <ErrorMessage className="ui error message visible" name="picture"/>
+        </div>
+
+        <div className={"my-4"}>
+            <label className="block text-gray-700 text-base font-bold mb-2" htmlFor="description">
+                Tags
+            </label>
+            <Field
+                component="select"
+                multiple={true}
+                name="tags"
+                onChange={evt =>
+                    props.formProps.setFieldValue(
+                        "tags",
+                        [].slice
+                            .call(evt.target.selectedOptions)
+                            .map(option => option.value)
+                    )
+                }
+            >
+                {
+                    _.map(props.formProps.tags, (s => (
+                        <option key={s.id} value={s.name}>
+                            {s.name}
+                        </option>
+                    )))
+                }
+            </Field>
         </div>
 
         <Link to={`${props.rootURL}/page-two`}>
-            <div className="inline-block text-sm px-4 py-2 leading-none border rounded text-teal-500 border-white hover:border-transparent hover:text-white hover:bg-teal-500 mt-4 mb-4">
+            <div
+                className="inline-block text-sm px-4 py-2 leading-none border rounded text-teal-500 border-white hover:border-transparent hover:text-white hover:bg-teal-500 mt-4 mb-4">
                 Next Page
             </div>
         </Link>

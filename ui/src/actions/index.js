@@ -7,12 +7,17 @@ export const CREATE_POST = 'CREATE_POST';
 export const DELETE_POST = 'DELETE_POST';
 export const SIGN_IN = 'SIGN_IN';
 export const SIGN_OUT = 'SIGN_OUT';
+export const FETCH_TAGS = 'FETCH_TAGS';
+
+
+export const fetchTags = () => async dispatch => {
+    const respone = await theBookOfJoel.get('api/v1/tags');
+    dispatch({type: FETCH_TAGS, payload: respone.data})
+};
 
 
 export const fetchPosts = () => async dispatch => {
-    const response = await theBookOfJoel.get(
-        'api/v1/posts'
-    );
+    const response = await theBookOfJoel.get('api/v1/posts');
     dispatch({type: FETCH_POSTS, payload: response.data})
 };
 
