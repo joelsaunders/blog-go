@@ -1,11 +1,15 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {connect} from "react-redux";
 import {fetchPosts} from "../../../actions";
 import PostItem from "./PostListItem";
 import {Link} from "react-router-dom";
+import TagModal from "../../tags/TagModal";
 
-const renderCreatePostButton = () => {
-    return <div className="absolute right-0 mb-4 pb-4 mr-2">
+const renderCreatePostButton = (setTagModalActive) => {
+    return <div className="float-right flex flex-row mt-2 pb-4 mr-2">
+        <button onClick={setTagModalActive} className="mr-2">
+            Manage Tags
+        </button>
         <Link to="/posts/create">
             <svg viewBox="0 0 24 24" width="24" height="24"
                  stroke="currentColor" strokeWidth="2" fill="none"
@@ -18,6 +22,7 @@ const renderCreatePostButton = () => {
 };
 
 const PostList = ({fetchPosts, posts, loggedIn}) => {
+    const [tagModalActive, setTagModalActive] = useState(false);
     useEffect(
         () => {
             (async () =>  await fetchPosts())()
@@ -26,10 +31,11 @@ const PostList = ({fetchPosts, posts, loggedIn}) => {
     );
 
     return <div className="relative">
+        {loggedIn? renderCreatePostButton(setTagModalActive): null}
         <div style={{width: "100%"}}>
             {Object.values(posts).map((post) => <PostItem key={post.slug} post={post} />)}
         </div>
-        {loggedIn? renderCreatePostButton(): null}
+        {tagModalActive? <TagModal onDismiss={() => setTagModalActive(false)} />: null}
     </div>;
 };
 

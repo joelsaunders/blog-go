@@ -8,13 +8,70 @@ export const DELETE_POST = 'DELETE_POST';
 export const SIGN_IN = 'SIGN_IN';
 export const SIGN_OUT = 'SIGN_OUT';
 export const FETCH_TAGS = 'FETCH_TAGS';
+export const EDIT_TAG = 'EDIT_TAG';
+export const DELETE_TAG = 'DELETE_TAG';
+export const CREATE_TAG = 'CREATE_TAG';
 
 
 export const fetchTags = () => async dispatch => {
-    const respone = await theBookOfJoel.get('api/v1/tags');
-    dispatch({type: FETCH_TAGS, payload: respone.data})
+    const response = await theBookOfJoel.get('api/v1/tags');
+    dispatch({type: FETCH_TAGS, payload: response.data})
 };
 
+export const createTag = (data) => async (dispatch, getState) => {
+    const token = getState().auth.token;
+
+    try {
+        const response = await theBookOfJoel.post(
+            'api/v1/tags',
+            {name: data},
+            {headers: {Authorization: `Bearer ${token}`}}
+        );
+        dispatch({type: CREATE_TAG, payload: response.data});
+    } catch (err) {
+        if (err.response.status === 401) {
+            dispatch(signOut())
+        }
+        console.log(err);
+    }
+};
+
+export const editTag = (tagID, data) => async (dispatch, getState) => {
+    const token = getState().auth.token;
+
+    try {
+        const response = await theBookOfJoel.patch(
+            `api/v1/tags/${tagID}`,
+            {id: tagID, name: data},
+            {headers: {Authorization: `Bearer ${token}`}}
+        );
+        dispatch({type: EDIT_TAG, payload: response.data});
+        dispatch(fetchPosts());
+    } catch (err) {
+        if (err.response.status === 401) {
+            dispatch(signOut())
+        }
+        console.log(err);
+    }
+};
+
+export const deleteTag = (tagID) => async (dispatch, getState) => {
+    const token = getState().auth.token;
+
+    try {
+        await theBookOfJoel.delete(
+            `/api/v1/tags/${tagID}`,
+            {headers: {Authorization: `Bearer ${token}`}}
+        );
+        dispatch({type: DELETE_TAG, payload: {id: tagID}});
+        dispatch(fetchPosts());
+    } catch (err) {
+        if (err.response.status === 401) {
+            dispatch(signOut())
+        }
+        console.log(err);
+    }
+};
 
 export const fetchPosts = () => async dispatch => {
     const response = await theBookOfJoel.get('api/v1/posts');
