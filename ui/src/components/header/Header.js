@@ -25,7 +25,7 @@ const Header = (props) => {
 
     return <nav className="flex items-center justify-between flex-wrap bg-teal-500 px-6 py-3">
         <div className="flex items-center flex-shrink-0 text-white mr-6">
-            <Link to="/">
+            <Link to="/" title="Home page" >
                 <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink"
                      enableBackground="new 0 0 512 512" id="Layer_1" version="1.1"
                      viewBox="0 0 512 512" width="56" height="56"

@@ -45,9 +45,9 @@ const PostItem = (props) => {
 
     return <div
         className="w-full rounded overflow-hidden shadow-lg my-4 flex flex-col md:flex-row bg-white relative md:h-full md:justify-end">
-        <Link className="md:w-1/3 md:absolute md:left-0 md:h-full" to={`/${props.post.slug}`}>
+        <Link className="md:w-1/3 md:absolute md:left-0 md:h-full" to={`/${props.post.slug}`} title={props.post.title}>
             <LazyLoad height="16rem" offsetVertical={500}>
-                <img className="object-cover w-full h-64 md:h-full" src={props.post.picture} alt="post"/>
+                <img className="object-cover w-full h-64 md:h-full" src={props.post.picture} alt={props.post.slug}/>
             </LazyLoad>
         </Link>
         <div className="w-full md:w-2/3 px-4 pl-4 pb-8">
