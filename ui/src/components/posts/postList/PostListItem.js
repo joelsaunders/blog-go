@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {connect} from "react-redux";
 import {Link} from "react-router-dom";
+import LazyLoad from 'react-lazy-load';
 import postDateFormatter from "../postDateFormatter";
 import DeletePostModal from "../postDelete/postDelete";
 
@@ -45,7 +46,9 @@ const PostItem = (props) => {
     return <div
         className="w-full rounded overflow-hidden shadow-lg my-4 flex flex-col md:flex-row bg-white relative md:h-full md:justify-end">
         <Link className="md:w-1/3 md:absolute md:left-0 md:h-full" to={`/${props.post.slug}`}>
-            <img className="object-cover w-full h-64 md:h-full" src={props.post.picture} alt="post"/>
+            <LazyLoad height="16rem" offsetVertical={500}>
+                <img className="object-cover w-full h-64 md:h-full" src={props.post.picture} alt="post"/>
+            </LazyLoad>
         </Link>
         <div className="w-full md:w-2/3 px-4 pl-4 pb-8">
             <h3 className="text-gray-900 font-bold text-xl mb-4 mt-4">

@@ -31,15 +31,26 @@ docker build -t $MIGRATE_TAG -q ./api/migrations
 echo "finished building migrations image"
 echo "$MIGRATE_TAG"
 
-if [ "$1" == "deploy" ]; then
+if [[ "$#" -eq 1 ]]; then
     echo "Pushing images to registry"
     docker push $BACKEND_TAG
     docker push $NGINX_TAG
     docker push $MIGRATE_TAG
 
-    echo "adding tags to kubectl"
-    sed -i "s#image: backend#image: ${BACKEND_TAG}#" ./k8s/deployment.yaml
-    sed -i "s#image: nginx#image: ${NGINX_TAG}#" ./k8s/deployment.yaml
-    sed -i "s#image: migrate-image#image: ${MIGRATE_TAG}#" ./k8s/deployment.yaml
-#    kubectl apply -Rf ./k8s
+fi
+
+if [ "$1" == "dev" ]; then
+    echo "adding tags to kubectl for dev"
+    sed -i "s#image: backend#image: ${BACKEND_TAG}#" ./k8s/dev/deployment.yaml
+    sed -i "s#image: nginx#image: ${NGINX_TAG}#" ./k8s/dev/deployment.yaml
+    sed -i "s#image: migrate-image#image: ${MIGRATE_TAG}#" ./k8s/dev/deployment.yaml
+#    kubectl apply -Rf ./k8s/dev/
+fi
+
+if [ "$1" == "prod" ]; then
+    echo "adding tags to kubectl for prod"
+    sed -i "s#image: backend#image: ${BACKEND_TAG}#" ./k8s/prod/deployment.yaml
+    sed -i "s#image: nginx#image: ${NGINX_TAG}#" ./k8s/prod/deployment.yaml
+    sed -i "s#image: migrate-image#image: ${MIGRATE_TAG}#" ./k8s/prod/deployment.yaml
+#    kubectl apply -Rf ./k8s/dev/
 fi
