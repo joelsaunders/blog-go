@@ -18,22 +18,22 @@ spec:
             - name: POSTGRES_URL
               valueFrom:
                 secretKeyRef:
-                  name: db-host
+                  name: db-host-new
                   key: db-host
             - name: POSTGRES_DBPORT
               valueFrom:
                 secretKeyRef:
-                  name: db-port
+                  name: db-port-new
                   key: db-port
             - name: POSTGRES_DBPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: db-password
+                  name: db-password-new
                   key: db-password
             - name: POSTGRES_DBUSER
-              value: gotest
+              value: thebookofjoel-prod
             - name: POSTGRES_DBNAME
-              value: gotest
+              value: thebookofjoel-prod
           args: ['-source', 'file:///migrations/', '-database', 'postgres://$(POSTGRES_DBUSER):$(POSTGRES_DBPASSWORD)@$(POSTGRES_URL):$(POSTGRES_DBPORT)/$(POSTGRES_DBNAME)', 'up']
       containers:
         - name: backend
@@ -46,22 +46,22 @@ spec:
             - name: POSTGRES_URL
               valueFrom:
                 secretKeyRef:
-                  name: db-host
+                  name: db-host-new
                   key: db-host
             - name: POSTGRES_DBPORT
               valueFrom:
                 secretKeyRef:
-                  name: db-port
+                  name: db-port-new
                   key: db-port
             - name: POSTGRES_DBPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: db-password
+                  name: db-password-new
                   key: db-password
             - name: POSTGRES_DBUSER
-              value: gotest
+              value: thebookofjoel-prod
             - name: POSTGRES_DBNAME
-              value: gotest
+              value: thebookofjoel-prod
         - name: nginx
           image: nginx
           ports:
