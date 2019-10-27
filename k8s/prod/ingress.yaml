@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: thebookofjoel
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    kubernetes.io/tls-acme: "true"
+    ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/ssl-temporary-redirect: "true"
+    ingress.kubernetes.io/ssl-host: "thebookofjoel.com"
+    traefik.ingress.kubernetes.io/redirect-regex: "^https://thebookofjoel.com/(.*)"
+    traefik.ingress.kubernetes.io/redirect-replacement: "https://www.thebookofjoel.com/$1"
+    traefik.ingress.kubernetes.io/redirect-permanent: "true"
+spec:
+  tls:
+    - secretName: www-thebookofjoel-com-tls
+      hosts:
+        - www.thebookofjoel.com
+        - thebookofjoel.com
+  rules:
+    - host: www.thebookofjoel.com
+      http:
+        paths:
+          - path: /api
+            backend:
+              serviceName: thebookofjoel-backend
+              servicePort: 80
+          - path: /
+            backend:
+              serviceName: thebookofjoel-nginx
+              servicePort: 80
+    - host: thebookofjoel.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: thebookofjoel-nginx
+              servicePort: 80
