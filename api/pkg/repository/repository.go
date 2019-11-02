@@ -15,7 +15,7 @@ type UserStore interface {
 }
 
 type PostStore interface {
-	List(ctx context.Context) ([]*models.Post, error)
+	List(ctx context.Context, filters map[string]string) ([]*models.Post, error)
 	GetBySlug(ctx context.Context, slug string) (*models.Post, error)
 	Create(ctx context.Context, post *models.Post) (*models.Post, error)
 	Update(ctx context.Context, post *models.Post) (*models.Post, error)

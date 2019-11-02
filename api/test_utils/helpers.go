@@ -75,7 +75,7 @@ func CreateTag(tagName string, db *sqlx.DB, t *testing.T) int {
 	return tagID
 }
 
-func AddTag(postID int, tagName string, db *sqlx.DB, t *testing.T) {
+func AddTag(postID int, tagName string, db *sqlx.DB, t *testing.T) int {
 	tagID := CreateTag(tagName, db, t)
 
 	var relationID int
@@ -96,4 +96,5 @@ func AddTag(postID int, tagName string, db *sqlx.DB, t *testing.T) {
 	if err != nil {
 		t.Errorf("could not relate post %d to tag %d because of %s", postID, tagID, err)
 	}
+	return tagID
 }

@@ -49,7 +49,7 @@ func (ph postHandler) deletePost() http.HandlerFunc {
 
 func (ph postHandler) getPostList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		posts, err := ph.store.List(r.Context())
+		posts, err := ph.store.List(r.Context(), map[string]string{})
 		HandleApiErr(err, ErrDatabase, w, r)
 		render.JSON(w, r, posts)
 	}

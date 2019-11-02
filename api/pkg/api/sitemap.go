@@ -40,7 +40,7 @@ func buildSitemap(postDatas []*sitemapContent) *stm.Sitemap {
 // GetSitemap is a handler that returns an xml response with a sitemap for the blog.
 func GetSitemap(postStore repository.PostStore, config *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		posts, err := postStore.List(r.Context())
+		posts, err := postStore.List(r.Context(), map[string]string{})
 
 		if err != nil {
 			log.Println(err)

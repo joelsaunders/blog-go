@@ -9,7 +9,12 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/joelsaunders/blog-go/api/pkg/models"
+	"github.com/joelsaunders/blog-go/api/pkg/repository/postgres"
 )
+
+var allowedPostFilters = map[string]string{
+	"tag_name": "t.name",
+}
 
 type PGPostStore struct {
 	DB *sqlx.DB
@@ -153,44 +158,31 @@ func (ps *PGPostStore) Update(ctx context.Context, post *models.Post) (*models.P
 	return insertedPost, nil
 }
 
-func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
-	query := `SELECT 
-		p.slug,
-		p.id,
-		p.created,
-		p.modified,
-		p.title,
-		p.body,
-		p.picture,
-		p.description,
-		p.published,
-		p.author_id,
+func (ps *PGPostStore) List(ctx context.Context, filters map[string]string) ([]*models.Post, error) {
+	filterString, varList := postgres.BuildFilterString(filters, allowedPostFilters)
+	query := fmt.Sprintf(`
+	SELECT 
+		p.*,
 		u.email as author_email,
-		array_agg(t.name) as tags
+		array_agg(t.name) FILTER (WHERE t.name IS NOT NULL) as tags
 	FROM posts p
-	INNER JOIN users u ON u.id = p.author_id
-	INNER JOIN posttags pt ON pt.post_id = p.id
-	INNER JOIN tags t ON t.id = pt.tag_id
+		INNER JOIN users u ON u.id = p.author_id
+		LEFT JOIN posttags pt ON pt.post_id = p.id
+		LEFT JOIN tags t ON t.id = pt.tag_id
+	%s
 	GROUP BY (
-		p.slug,
-		p.id,
-		p.created,
-		p.modified,
-		p.title,
-		p.body,
-		p.picture,
-		p.description,
-		p.published,
-		p.author_id,
+		p.slug, p.id, p.created, p.modified, p.title, p.body, p.picture,
+		p.description, p.published, p.author_id,
 		author_email
 	)
 	ORDER BY p.created desc
-	`
-	rows, err := ps.DB.QueryxContext(ctx, query)
+	`, filterString)
+
+	rows, err := ps.DB.QueryxContext(ctx, query, varList...)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer postgres.Close(rows)
 
 	posts := make([]*models.Post, 0)
 
@@ -208,16 +200,7 @@ func (ps *PGPostStore) List(ctx context.Context) ([]*models.Post, error) {
 
 func (ps *PGPostStore) GetBySlug(ctx context.Context, slug string) (*models.Post, error) {
 	query := `SELECT 
-		p.slug,
-		p.id,
-		p.created,
-		p.modified,
-		p.title,
-		p.body,
-		p.picture,
-		p.description,
-		p.published,
-		p.author_id,
+		p.*,
 		u.email as author_email,
 		array_agg(t.name) as tags
 	FROM posts p INNER JOIN users u ON u.id = p.author_id
@@ -225,16 +208,8 @@ func (ps *PGPostStore) GetBySlug(ctx context.Context, slug string) (*models.Post
 	INNER JOIN tags t ON t.id = pt.tag_id
 	WHERE slug=$1
 	GROUP BY (
-		p.slug,
-		p.id,
-		p.created,
-		p.modified,
-		p.title,
-		p.body,
-		p.picture,
-		p.description,
-		p.published,
-		p.author_id,
+	    p.slug, p.id, p.created, p.modified, p.title, p.body, p.picture,
+		p.description, p.published, p.author_id,
 		author_email
 	);`
 	post := models.Post{}
@@ -270,7 +245,7 @@ func (ps *PGPostStore) getTags(ctx context.Context, postID int) ([]string, error
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer postgres.Close(rows)
 
 	tags := make([]string, 0)
 

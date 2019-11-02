@@ -70,7 +70,10 @@ func TestPosts(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	test_utils.SetUpTestDB("../../../migrations")
+	err := test_utils.SetUpTestDB("../../../migrations")
+	if err != nil {
+		t.Fatalf("could not set up test db: %s", err)
+	}
 	txdb.Register("txdb", "postgres", "host=localhost port=15432 user=root password=root dbname=test sslmode=disable")
 
 	t.Run("Test Delete Post", func(t *testing.T) {
@@ -97,7 +100,7 @@ func TestPosts(t *testing.T) {
 		insertedPostID := insertPost(&testPost, db, t)
 		test_utils.AddTag(insertedPostID, testPost.Tags[0], db, t)
 
-		postStore := post.PGPostStore{db}
+		postStore := post.PGPostStore{DB: db}
 		ctx := context.Background()
 
 		err := postStore.DeleteBySlug(ctx, testPost.Slug)
@@ -106,7 +109,7 @@ func TestPosts(t *testing.T) {
 			t.Fatalf("could not delete post: %s", err)
 		}
 
-		posts, err := postStore.List(ctx)
+		posts, err := postStore.List(ctx, map[string]string{})
 
 		if err != nil {
 			t.Fatalf("could not list posts after delete: %s", err)
@@ -114,6 +117,57 @@ func TestPosts(t *testing.T) {
 
 		if len(posts) != 0 {
 			t.Fatalf("expected 0 posts but got %d", len(posts))
+		}
+	})
+
+	t.Run("Test list posts with filter", func(t *testing.T) {
+		db := test_utils.OpenTransaction(t)
+		defer db.Close()
+
+		userEmail := "joel"
+		userID := test_utils.InsertUser(userEmail, db, t)
+
+		testPost := models.Post{
+			Created:     time.Now().Round(time.Second).UTC(),
+			Modified:    time.Now().Round(time.Second).UTC(),
+			Slug:        "test slug",
+			Title:       "test title",
+			Body:        "test body",
+			Picture:     "test picture",
+			Description: "test description",
+			Published:   true,
+			AuthorID:    userID,
+			AuthorEmail: userEmail,
+		}
+
+		firstPostID := insertPost(&testPost, db, t)
+		testPost.Slug = "test slug 2"
+		testPost.ID = 0
+		secondPostID := insertPost(&testPost, db, t)
+		tagName1 := "tagName"
+		tagName2 := "tagName2"
+		test_utils.AddTag(firstPostID, tagName1, db, t)
+		test_utils.AddTag(secondPostID, tagName2, db, t)
+
+		postStore := post.PGPostStore{DB: db}
+		ctx := context.Background()
+
+		tests := map[int]string{
+			firstPostID:  tagName1,
+			secondPostID: tagName2,
+		}
+
+		for postID, tagName := range tests {
+			returnedPosts, err := postStore.List(ctx, map[string]string{"tag_name": tagName})
+			if err != nil {
+				t.Fatalf("could not return posts: %s", err)
+			}
+			if len(returnedPosts) != 1 {
+				t.Errorf("return 2 posts should have returned 1")
+			}
+			if returnedPosts[0].ID != postID {
+				t.Errorf("the correct post was not returned ")
+			}
 		}
 	})
 
@@ -141,10 +195,10 @@ func TestPosts(t *testing.T) {
 		insertedPostID := insertPost(&testPost, db, t)
 		test_utils.AddTag(insertedPostID, testPost.Tags[0], db, t)
 
-		postStore := post.PGPostStore{db}
+		postStore := post.PGPostStore{DB: db}
 		ctx := context.Background()
 
-		posts, err := postStore.List(ctx)
+		posts, err := postStore.List(ctx, map[string]string{})
 
 		if err != nil {
 			t.Fatalf("could not return posts: %s", err)
@@ -183,20 +237,15 @@ func TestPosts(t *testing.T) {
 		test_utils.AddTag(insertedPostID, testPost.Tags[0], db, t)
 		test_utils.AddTag(insertedPostID, testPost.Tags[1], db, t)
 
-		postStore := post.PGPostStore{db}
+		postStore := post.PGPostStore{DB: db}
 		ctx := context.Background()
 
-		post, err := postStore.GetBySlug(ctx, testPost.Slug)
+		dbPost, err := postStore.GetBySlug(ctx, testPost.Slug)
 		if err != nil {
-			t.Fatalf("post not created: %s", err)
+			t.Fatalf("dbPost not created: %s", err)
 		}
-		testPost.ID = post.ID
-
-		if err != nil {
-			t.Fatalf("could not return posts: %s", err)
-		}
-
-		assertPostEqual(post, &testPost, t)
+		testPost.ID = dbPost.ID
+		assertPostEqual(dbPost, &testPost, t)
 	})
 
 	t.Run("test create post", func(t *testing.T) {
@@ -223,7 +272,7 @@ func TestPosts(t *testing.T) {
 		test_utils.CreateTag("hello", db, t)
 		test_utils.CreateTag("tag 2", db, t)
 
-		postStore := post.PGPostStore{db}
+		postStore := post.PGPostStore{DB: db}
 		ctx := context.Background()
 
 		post, err := postStore.Create(ctx, &testPost)
@@ -264,7 +313,7 @@ func TestPosts(t *testing.T) {
 		postID := insertPost(&testPost, db, t)
 		test_utils.AddTag(postID, testPost.Tags[0], db, t)
 
-		postStore := post.PGPostStore{db}
+		postStore := post.PGPostStore{DB: db}
 		ctx := context.Background()
 
 		// modify all fields on the post

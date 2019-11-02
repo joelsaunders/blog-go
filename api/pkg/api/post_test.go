@@ -21,7 +21,7 @@ type fakePostDB struct {
 	posts []*models.Post
 }
 
-func (fp fakePostDB) List(_ context.Context) ([]*models.Post, error) {
+func (fp fakePostDB) List(_ context.Context, _ map[string]string) ([]*models.Post, error) {
 	return fp.posts, nil
 }
 
