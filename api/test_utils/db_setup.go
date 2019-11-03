@@ -31,6 +31,8 @@ func SetUpTestDB(migrationPath string) error {
 		log.Print("db setup failed")
 		return err
 	}
+	defer db.Close()
+
 	err = db.Ping()
 	if err != nil {
 		log.Printf("db ping fail: %s\n", err)

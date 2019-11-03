@@ -4,46 +4,39 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"strconv"
-	"strings"
-)
 
-func formatInBindVars(start, number int) string {
-	var numbers []string
-	for i := start; i < start+number; i++ {
-		numbers = append(numbers, fmt.Sprintf("$%s", strconv.Itoa(i)))
-	}
-	return fmt.Sprintf("(%s)", strings.Join(numbers, ","))
-}
+	"github.com/jmoiron/sqlx"
+)
 
 // BuildFilterString builds a postgres where clause from a map of filter params
 //
 // The allowedFilters arg is to ensure only known filters can be applied and to map to an
 // internal postgres filter arg name such as tag.id if needed.
-func BuildFilterString(filters map[string][]string, allowedFilters map[string]string) (string, []interface{}) {
-	queryString := "WHERE 1=1"
-	var varList []interface{}
+func BuildFilterString(query string, filters map[string][]string, allowedFilters map[string]string) (string, []interface{}, error) {
+	filterString := "WHERE 1=1"
+	var inputArgs []interface{}
 
-	i := 1
-	for k, valList := range filters {
-		if realFilterName, ok := allowedFilters[k]; ok {
-			if len(valList) == 0 {
+	// filter key is the url name of the filter used as the lookup for the allowed filters list
+	for filterKey, filterValList := range filters {
+		if realFilterName, ok := allowedFilters[filterKey]; ok {
+			if len(filterValList) == 0 {
 				continue
 			}
 
-			queryString = fmt.Sprintf(
-				"%s AND %s IN %s",
-				queryString,
-				realFilterName,
-				formatInBindVars(i, len(valList)),
-			)
-			for _, item := range valList {
-				varList = append(varList, item)
-			}
-			i += len(valList)
+			filterString = fmt.Sprintf("%s AND %s IN (?)", filterString, realFilterName)
+			inputArgs = append(inputArgs, filterValList)
 		}
 	}
-	return queryString, varList
+	// template the where clause into the original query and then expand the IN clauses with sqlx
+	query, args, err := sqlx.In(fmt.Sprintf(query, filterString), inputArgs...)
+	if err != nil {
+		return "", nil, err
+	}
+
+	// not ideal but since we are using txdb as the driver name in tests, need to
+	// specify what to rebind ? to
+	query = sqlx.Rebind(sqlx.DOLLAR, query)
+	return query, args, nil
 }
 
 // Close ensures that a deferred close call's error is checked.
