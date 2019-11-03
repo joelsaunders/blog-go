@@ -1,10 +1,9 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 
-	viper "github.com/spf13/viper"
+	"github.com/spf13/viper"
 )
 
 type Constants struct {
@@ -37,7 +36,6 @@ func initViper() (Constants, error) {
 
 	viper.SetDefault("PORT", "8000")
 	viper.Set("JWTSecret", []byte(viper.GetString("JWTSecret")))
-	fmt.Println(viper.GetString("JWTSecret"))
 	var constants Constants
 	err = viper.Unmarshal(&constants)
 	return constants, err

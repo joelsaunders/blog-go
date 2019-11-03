@@ -21,8 +21,37 @@ type fakePostDB struct {
 	posts []*models.Post
 }
 
-func (fp fakePostDB) List(_ context.Context, _ map[string]string) ([]*models.Post, error) {
-	return fp.posts, nil
+func contains(item string, container []string) bool {
+	for _, x := range container {
+		if x == item {
+			return true
+		}
+	}
+	return false
+}
+
+func (fp fakePostDB) List(_ context.Context, filters map[string][]string) ([]*models.Post, error) {
+	if len(filters) == 0 {
+		return fp.posts, nil
+	}
+	filteredPosts := fp.posts
+	n := 0
+	for _, post := range filteredPosts {
+		for k, v := range filters {
+			switch k {
+			case "tag_name":
+				{
+					for _, tag := range post.Tags {
+						if contains(tag, v) {
+							filteredPosts[n] = post
+							n++
+						}
+					}
+				}
+			}
+		}
+	}
+	return filteredPosts[:n], nil
 }
 
 func (fp fakePostDB) GetByID(_ context.Context, id int) (*models.Post, error) {
@@ -136,6 +165,34 @@ func TestPostAPI(t *testing.T) {
 		test_utils.AssertResponseCode(response.Code, http.StatusOK, t)
 
 		expectedPost, _ := json.Marshal(postStore.posts)
+		test_utils.AssertEqualJSON(response.Body.String(), string(expectedPost), t)
+	})
+
+	t.Run("Test post list with filter", func(t *testing.T) {
+		configuration, _ := config.NewConfig()
+		testPost1 := models.Post{
+			ID:   1,
+			Tags: []string{"hello1"},
+		}
+		testPost2 := models.Post{
+			ID:   2,
+			Tags: []string{"hello2"},
+		}
+
+		postStore := fakePostDB{[]*models.Post{&testPost1, &testPost2}}
+		server := api.PostRoutes(&postStore, configuration)
+
+		request, _ := http.NewRequest(
+			http.MethodGet,
+			fmt.Sprintf("/?tag_name=%s", testPost1.Tags[0]),
+			nil,
+		)
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		test_utils.AssertResponseCode(response.Code, http.StatusOK, t)
+
+		expectedPost, _ := json.Marshal([]*models.Post{&testPost1})
 		test_utils.AssertEqualJSON(response.Body.String(), string(expectedPost), t)
 	})
 

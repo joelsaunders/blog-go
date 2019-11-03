@@ -140,10 +140,8 @@ func (ps *PGPostStore) Update(ctx context.Context, post *models.Post) (*models.P
 	}
 
 	toAdd := difference(post.Tags, existingTags)
-	fmt.Println(toAdd)
 	err = ps.addTags(ctx, updateRow.ID, toAdd)
 	toRemove := difference(existingTags, post.Tags)
-	fmt.Println(toRemove)
 	err = ps.removeTags(ctx, updateRow.ID, toRemove)
 
 	if err != nil {
@@ -158,8 +156,9 @@ func (ps *PGPostStore) Update(ctx context.Context, post *models.Post) (*models.P
 	return insertedPost, nil
 }
 
-func (ps *PGPostStore) List(ctx context.Context, filters map[string]string) ([]*models.Post, error) {
+func (ps *PGPostStore) List(ctx context.Context, filters map[string][]string) ([]*models.Post, error) {
 	filterString, varList := postgres.BuildFilterString(filters, allowedPostFilters)
+
 	query := fmt.Sprintf(`
 	SELECT 
 		p.*,

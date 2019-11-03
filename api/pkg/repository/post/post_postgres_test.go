@@ -109,7 +109,7 @@ func TestPosts(t *testing.T) {
 			t.Fatalf("could not delete post: %s", err)
 		}
 
-		posts, err := postStore.List(ctx, map[string]string{})
+		posts, err := postStore.List(ctx, map[string][]string{})
 
 		if err != nil {
 			t.Fatalf("could not list posts after delete: %s", err)
@@ -158,7 +158,7 @@ func TestPosts(t *testing.T) {
 		}
 
 		for postID, tagName := range tests {
-			returnedPosts, err := postStore.List(ctx, map[string]string{"tag_name": tagName})
+			returnedPosts, err := postStore.List(ctx, map[string][]string{"tag_name": {tagName}})
 			if err != nil {
 				t.Fatalf("could not return posts: %s", err)
 			}
@@ -198,7 +198,7 @@ func TestPosts(t *testing.T) {
 		postStore := post.PGPostStore{DB: db}
 		ctx := context.Background()
 
-		posts, err := postStore.List(ctx, map[string]string{})
+		posts, err := postStore.List(ctx, map[string][]string{})
 
 		if err != nil {
 			t.Fatalf("could not return posts: %s", err)
