@@ -14,6 +14,7 @@ import (
 
 	"github.com/joelsaunders/blog-go/api/pkg/models"
 	"github.com/joelsaunders/blog-go/api/pkg/repository/post"
+	"github.com/joelsaunders/blog-go/api/pkg/repository/postgres"
 	"github.com/joelsaunders/blog-go/api/test_utils"
 )
 
@@ -78,7 +79,7 @@ func TestPosts(t *testing.T) {
 
 	t.Run("Test Delete Post", func(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
-		defer db.Close()
+		defer postgres.Close(db)
 
 		userEmail := "joel"
 		userID := test_utils.InsertUser(userEmail, db, t)
@@ -122,7 +123,7 @@ func TestPosts(t *testing.T) {
 
 	t.Run("Test list posts with filter", func(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
-		defer db.Close()
+		defer postgres.Close(db)
 
 		userEmail := "joel"
 		userID := test_utils.InsertUser(userEmail, db, t)
@@ -173,7 +174,7 @@ func TestPosts(t *testing.T) {
 
 	t.Run("Test List Posts", func(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
-		defer db.Close()
+		defer postgres.Close(db)
 
 		userEmail := "joel"
 		userID := test_utils.InsertUser(userEmail, db, t)
@@ -214,7 +215,7 @@ func TestPosts(t *testing.T) {
 
 	t.Run("test get post", func(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
-		defer db.Close()
+		defer postgres.Close(db)
 
 		userEmail := "joel"
 		userID := test_utils.InsertUser(userEmail, db, t)
@@ -250,7 +251,7 @@ func TestPosts(t *testing.T) {
 
 	t.Run("test create post", func(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
-		defer db.Close()
+		defer postgres.Close(db)
 
 		userEmail := "joel"
 		userID := test_utils.InsertUser(userEmail, db, t)
@@ -275,21 +276,21 @@ func TestPosts(t *testing.T) {
 		postStore := post.PGPostStore{DB: db}
 		ctx := context.Background()
 
-		post, err := postStore.Create(ctx, &testPost)
+		cPost, err := postStore.Create(ctx, &testPost)
 
 		if err != nil {
 			t.Fatalf("could not create post: %s", err)
 		}
 		// set auto fields
-		testPost.Created = post.Created
-		testPost.Modified = post.Modified
-		testPost.ID = post.ID
-		assertPostEqual(post, &testPost, t)
+		testPost.Created = cPost.Created
+		testPost.Modified = cPost.Modified
+		testPost.ID = cPost.ID
+		assertPostEqual(cPost, &testPost, t)
 	})
 
 	t.Run("test update post", func(t *testing.T) {
 		db := test_utils.OpenTransaction(t)
-		defer db.Close()
+		defer postgres.Close(db)
 
 		userEmail := "joel"
 		userID := test_utils.InsertUser(userEmail, db, t)
