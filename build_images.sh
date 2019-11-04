@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# Also set up tags here for local building, should be the same as env vars exported in circle.yml
 export COMMIT=`git rev-parse HEAD`
 export BASE_TAG="joelsaunders91"
 
@@ -52,5 +51,5 @@ if [ "$1" == "prod" ]; then
     sed -i "s#image: backend#image: ${BACKEND_TAG}#" ./k8s/prod/deployment.yaml
     sed -i "s#image: nginx#image: ${NGINX_TAG}#" ./k8s/prod/deployment.yaml
     sed -i "s#image: migrate-image#image: ${MIGRATE_TAG}#" ./k8s/prod/deployment.yaml
-#    kubectl apply -Rf ./k8s/dev/
+#    kubectl apply -Rf ./k8s/prod/
 fi

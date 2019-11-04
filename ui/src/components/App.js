@@ -20,7 +20,7 @@ function App() {
             <meta name="description" content="Joel Saunders personal blog"/>
             <meta name="robots" content="index,follow"/>
         </Helmet>
-        <div className="container mx-auto p-2 max-w-6xl">
+        <div className="container mx-auto p-2 max-w-5xl">
             <Router history={customHistory}>
                 <div>
                     <Route path="/" component={HeaderContainer}/>
