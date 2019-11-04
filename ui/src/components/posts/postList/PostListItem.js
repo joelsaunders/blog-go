@@ -32,9 +32,16 @@ const renderPostButtons = (post, setDeleteModalActive) => {
     </div>
 };
 
-const PostTag = ({tagName}) => {
-    return <div
-        className="mr-2 rounded text-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-100 hover:bg-teal-500">
+const PostTag = ({tagName, selected, setTagFilter}) => {
+    let tagClass;
+    // show a highlighted tag if it is currently selected
+    if (selected) {
+        tagClass = "mr-2 rounded text-teal-100 bg-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-500 hover:bg-white"
+    } else {
+        tagClass = "mr-2 rounded text-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-100 hover:bg-teal-500"
+    }
+
+    return <div className={tagClass} onClick={() => selected ? setTagFilter(""): setTagFilter(tagName)}>
         {tagName}
     </div>
 };
@@ -61,7 +68,7 @@ const PostItem = (props) => {
             </p>
             <div className="flex flex-row mb-4 flex-wrap">
                 {props.post.tags.map((name) => {
-                    return <PostTag key={name} tagName={name}/>
+                    return <PostTag setTagFilter={props.setTagFilter} selected={props.selectedTag === name} key={name} tagName={name}/>
                 })}
             </div>
             <p className="text-gray-700 text-base">

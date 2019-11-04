@@ -73,8 +73,11 @@ export const deleteTag = (tagID) => async (dispatch, getState) => {
     }
 };
 
-export const fetchPosts = () => async dispatch => {
-    const response = await theBookOfJoel.get('api/v1/posts');
+export const fetchPosts = (tagFilter) => async dispatch => {
+    const baseUrlString = "api/v1/posts";
+    const urlString = tagFilter ? `${baseUrlString}?tag_name=${tagFilter}`: baseUrlString;
+
+    const response = await theBookOfJoel.get(urlString);
     dispatch({type: FETCH_POSTS, payload: response.data})
 };
 

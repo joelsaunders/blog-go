@@ -4,6 +4,7 @@ import {fetchPosts} from "../../../actions";
 import PostItem from "./PostListItem";
 import {Link} from "react-router-dom";
 import TagModal from "../../tags/TagModal";
+import useQueryString from "../../../hooks/useQueryString";
 
 const renderCreatePostButton = (setTagModalActive) => {
     return <div className="float-right flex flex-row mt-2 pb-4 mr-2">
@@ -23,17 +24,19 @@ const renderCreatePostButton = (setTagModalActive) => {
 
 const PostList = ({fetchPosts, posts, loggedIn}) => {
     const [tagModalActive, setTagModalActive] = useState(false);
+    const [tagFilter, onSetTagFilter] = useQueryString("tag_name");
+
     useEffect(
         () => {
-            (async () =>  await fetchPosts())()
+            (async () =>  await fetchPosts(tagFilter))()
         },
-        [fetchPosts]
+        [fetchPosts, tagFilter]
     );
 
     return <div className="relative">
         {loggedIn? renderCreatePostButton(setTagModalActive): null}
         <div style={{width: "100%"}}>
-            {Object.values(posts).map((post) => <PostItem key={post.slug} post={post} />)}
+            {Object.values(posts).map((post) => <PostItem setTagFilter={onSetTagFilter} selectedTag={tagFilter} key={post.slug} post={post} />)}
         </div>
         {tagModalActive? <TagModal onDismiss={() => setTagModalActive(false)} />: null}
     </div>;
