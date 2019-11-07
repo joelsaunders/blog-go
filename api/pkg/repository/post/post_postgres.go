@@ -160,8 +160,11 @@ func (ps *PGPostStore) List(ctx context.Context, filters map[string][]string) ([
 	query := `
 	SELECT 
 		p.*,
-		u.email as author_email,
-		array_agg(t.name) FILTER (WHERE t.name IS NOT NULL) as tags
+		u.email 					 as author_email,
+		array(SELECT tt.name
+			FROM tags tt
+			INNER JOIN posttags pt on tt.id = pt.tag_id
+			WHERE pt.post_id = p.id) as tags
 	FROM posts p
 		INNER JOIN users u ON u.id = p.author_id
 		LEFT JOIN posttags pt ON pt.post_id = p.id
