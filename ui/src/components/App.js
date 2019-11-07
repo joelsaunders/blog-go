@@ -1,6 +1,7 @@
 import React from 'react';
 import {Redirect, Route, Router, Switch} from "react-router-dom";
-import PostList from "./posts/postList/PostList";
+import {Helmet} from "react-helmet";
+
 import PostEdit from "./posts/postEdit/PostEditContainer";
 import customHistory from "../customHistory";
 import PostCreate from "./posts/postCreate/PostCreateContainer";
@@ -10,7 +11,8 @@ import SiteContainer from "./site/SiteContainer";
 import ContactContainer from "./contact/ContactContainer";
 import TeamContainer from "./team/TeamContainer";
 import PostDetailContainer from "./posts/postDetail/PostDetailContainer";
-import {Helmet} from "react-helmet";
+import {QueryParamProvider} from "use-query-params";
+import PostListContainer from "./posts/postList/PostListContainer";
 
 
 function App() {
@@ -24,7 +26,9 @@ function App() {
             <Router history={customHistory}>
                 <div>
                     <Route path="/" component={HeaderContainer}/>
-                    <Route path="/" exact component={PostList}/>
+                    <QueryParamProvider ReactRouterRoute={Route}>
+                        <Route path="/" exact component={PostListContainer}/>
+                    </QueryParamProvider>
                     <Switch>
                         <Route path="/posts/edit/:slug" component={PostEdit}/>
                         <Route path="/posts/create" component={PostCreate}/>

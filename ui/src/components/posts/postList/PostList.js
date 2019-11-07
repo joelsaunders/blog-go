@@ -1,10 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {connect} from "react-redux";
-import {fetchPosts} from "../../../actions";
+import React from 'react';
+import _ from 'lodash';
+
 import PostItem from "./PostListItem";
 import {Link} from "react-router-dom";
 import TagModal from "../../tags/TagModal";
-import useQueryString from "../../../hooks/useQueryString";
 
 const renderCreatePostButton = (setTagModalActive) => {
     return <div className="float-right flex flex-row mt-2 pb-4 mr-2">
@@ -22,28 +21,30 @@ const renderCreatePostButton = (setTagModalActive) => {
     </div>
 };
 
-const PostList = ({fetchPosts, posts, loggedIn}) => {
-    const [tagModalActive, setTagModalActive] = useState(false);
-    const [tagFilter, onSetTagFilter] = useQueryString("tag_name");
+// Helper function to add/remove items from the filter array
+const addRemoveTag = (tag, tagList) => {
+    if (_.includes(tagList, tag)) {
+        return _.filter(tagList, (item) => item !== tag)
+    } else {
+        return [...(tagList || []), tag]
+    }
+};
 
-    useEffect(
-        () => {
-            (async () =>  await fetchPosts(tagFilter))()
-        },
-        [fetchPosts, tagFilter]
-    );
-
+const PostList = ({posts, loggedIn, setTagModalActive, tagModalActive, onSetTagFilter, tagFilters}) => {
     return <div className="relative">
         {loggedIn? renderCreatePostButton(setTagModalActive): null}
         <div style={{width: "100%"}}>
-            {Object.values(posts).map((post) => <PostItem setTagFilter={onSetTagFilter} selectedTag={tagFilter} key={post.slug} post={post} />)}
+            {
+                Object.values(posts).map((post) => <PostItem
+                    setTagFilter={(value) => onSetTagFilter(addRemoveTag(value, tagFilters))}
+                    selectedTags={tagFilters}
+                    key={post.slug}
+                    post={post}
+                />)
+            }
         </div>
         {tagModalActive? <TagModal onDismiss={() => setTagModalActive(false)} />: null}
     </div>;
 };
 
-const mapStateToProps = (state) => {
-    return {posts: state.posts, loggedIn: state.auth.token !== null}
-};
-
-export default connect(mapStateToProps, {fetchPosts})(PostList);
+export default PostList;

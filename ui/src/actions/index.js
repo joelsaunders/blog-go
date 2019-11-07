@@ -1,5 +1,6 @@
 import theBookOfJoel from "../apis/theBookOfJoel";
 import {saveState} from "../localStorage";
+import qs from "query-string";
 
 export const FETCH_POSTS = 'FETCH_POSTS';
 export const EDIT_POST = 'EDIT_POST';
@@ -73,11 +74,18 @@ export const deleteTag = (tagID) => async (dispatch, getState) => {
     }
 };
 
-export const fetchPosts = (tagFilter) => async dispatch => {
-    const baseUrlString = "api/v1/posts";
-    const urlString = tagFilter ? `${baseUrlString}?tag_name=${tagFilter}`: baseUrlString;
+export const fetchPosts = (options) => async dispatch => {
+    const urlString = "api/v1/posts";
 
-    const response = await theBookOfJoel.get(urlString);
+    const response = await theBookOfJoel.get(
+        urlString,
+        {
+            params: options.filters,
+            paramsSerializer: params => {
+                return qs.stringify(params)
+            }
+        }
+    );
     dispatch({type: FETCH_POSTS, payload: response.data})
 };
 

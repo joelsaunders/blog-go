@@ -4,6 +4,7 @@ import {Link} from "react-router-dom";
 import LazyLoad from 'react-lazy-load';
 import postDateFormatter from "../postDateFormatter";
 import DeletePostModal from "../postDelete/postDelete";
+import _ from 'lodash';
 
 const renderPostButtons = (post, setDeleteModalActive) => {
     return <div className="absolute flex flex-row top-0 right-0 mt-2">
@@ -36,50 +37,49 @@ const PostTag = ({tagName, selected, setTagFilter}) => {
     let tagClass;
     // show a highlighted tag if it is currently selected
     if (selected) {
-        tagClass = "mr-2 rounded text-teal-100 bg-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-500 hover:bg-white"
+        tagClass = "mr-2 rounded text-teal-100 bg-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-500 hover:bg-white cursor-pointer"
     } else {
-        tagClass = "mr-2 rounded text-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-100 hover:bg-teal-500"
+        tagClass = "mr-2 rounded text-teal-500 text-sm border-teal-500 border px-2 hover:text-teal-100 hover:bg-teal-500 cursor-pointer"
     }
 
-    return <div className={tagClass} onClick={() => selected ? setTagFilter(""): setTagFilter(tagName)}>
+    return <div className={tagClass} onClick={() => setTagFilter(tagName)}>
         {tagName}
     </div>
 };
 
 
-const PostItem = (props) => {
+const PostItem = ({post, currentUser, setTagFilter, selectedTags}) => {
     const [deleteModalActive, setDeleteModalActive] = useState(false);
-
     return <div
         className="w-full rounded overflow-hidden shadow-lg my-4 flex flex-col md:flex-row bg-white relative md:h-full md:justify-end">
-        <Link className="md:w-1/3 md:absolute md:left-0 md:h-full" to={`/${props.post.slug}`} title={props.post.title}>
+        <Link className="md:w-1/3 md:absolute md:left-0 md:h-full" to={`/${post.slug}`} title={post.title}>
             <LazyLoad height="100%" offsetVertical={500}>
-                <img className="object-cover w-full h-64 md:h-full" src={props.post.picture} alt={props.post.slug}/>
+                <img className="object-cover w-full h-64 md:h-full" src={post.picture} alt={post.slug}/>
             </LazyLoad>
         </Link>
         <div className="w-full md:w-2/3 px-4 pl-4 pb-8">
             <h3 className="text-gray-900 font-bold text-xl mb-4 mt-4">
-                <Link to={`/${props.post.slug}`}>
-                    {props.post.title}
+                <Link to={`/${post.slug}`}>
+                    {post.title}
                 </Link>
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-                <span>{postDateFormatter(props.post.created)}</span>
+                <span>{postDateFormatter(post.created)}</span>
             </p>
             <div className="flex flex-row mb-4 flex-wrap">
-                {props.post.tags.map((name) => {
-                    return <PostTag setTagFilter={props.setTagFilter} selected={props.selectedTag === name} key={name} tagName={name}/>
+                {post.tags.map((name) => {
+                    return <PostTag setTagFilter={setTagFilter} selected={_.includes(selectedTags, name)} key={name} tagName={name}/>
                 })}
             </div>
             <p className="text-gray-700 text-base">
-                {props.post.description}
+                {post.description}
             </p>
         </div>
-        {props.currentUser === props.post.author ? renderPostButtons(props.post, setDeleteModalActive) : null}
+        {currentUser === post.author ? renderPostButtons(post, setDeleteModalActive) : null}
         {
             deleteModalActive ?
                 <DeletePostModal
-                    postSlug={props.post.slug}
+                    postSlug={post.slug}
                     setDeleteModalActive={(value) => setDeleteModalActive(value)}
                 /> :
                 null
