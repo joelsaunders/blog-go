@@ -4,14 +4,11 @@ metadata:
   name: ingress
   namespace: thebookofjoel
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     kubernetes.io/ingress.class: traefik
-    kubernetes.io/tls-acme: "true"
     ingress.kubernetes.io/ssl-redirect: "true"
-    ingress.kubernetes.io/ssl-temporary-redirect: "true"
-    ingress.kubernetes.io/ssl-host: "thebookofjoel.com"
-    traefik.ingress.kubernetes.io/redirect-regex: "^https://thebookofjoel.com/(.*)"
-    traefik.ingress.kubernetes.io/redirect-replacement: "https://www.thebookofjoel.com/$1"
-    traefik.ingress.kubernetes.io/redirect-permanent: "true"
+    ingress.kubernetes.io/ssl-host: "www.thebookofjoel.com"
+    ingress.kubernetes.io/ssl-force-host: "true"
 spec:
   tls:
     - secretName: www-thebookofjoel-com-tls

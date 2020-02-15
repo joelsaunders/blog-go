@@ -4,6 +4,7 @@ metadata:
   name: ingress
   namespace: gotest
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
     kubernetes.io/ingress.class: traefik
     traefik.ingress.kubernetes.io/redirect-entry-point: https
 spec:
