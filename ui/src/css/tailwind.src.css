@@ -7,7 +7,7 @@
 }
 
 .markdown h1, .markdown h2, .markdown h3, .markdown h4 {
-    @apply leading-tight font-bold text-black border-b
+    @apply leading-tight font-bold text-black border-t pt-12
 }
 
 .markdown h2, .markdown h1 {
@@ -24,6 +24,22 @@
 
 .markdown img {
     @apply mt-6;
+}
+
+.markdown ul {
+    @apply list-disc list-inside mt-4;
+}
+
+.markdown ol {
+    @apply list-decimal list-inside mt-4;
+}
+
+.markdown li {
+    @apply mt-2;
+}
+
+.markdown a {
+    @apply text-green-600 underline;
 }
 
 /* code blocks */
