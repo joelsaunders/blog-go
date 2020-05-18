@@ -1,9 +1,12 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: thebookofjoel
   namespace: thebookofjoel
 spec:
+  selector:
+    matchLabels:
+      name: thebookofjoel-main
   revisionHistoryLimit: 1
   template:
     metadata:
@@ -63,6 +66,6 @@ spec:
             - name: POSTGRES_DBNAME
               value: thebookofjoel-prod
         - name: nginx
-          image: nginx
+          image: joelsaunders91/gothebookofjoel-nginx:46fcb4edce64cc2854d5321e0727b233bd978fcc
           ports:
             - containerPort: 80
