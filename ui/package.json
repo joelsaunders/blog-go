@@ -7,7 +7,7 @@
     "formik": "^1.5.8",
     "highlight.js": "^9.18.1",
     "lodash": "^4.17.15",
-    "marked": "^0.7.0",
+    "marked": "^4.0.10",
     "query-string": "^6.12.1",
     "react": "^16.13.1",
     "react-debounce-input": "^3.2.2",
